@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>艾玛绘心答 · 一本绘本，解开养育心结</title>
+<style>
+  :root{
+    --cream:#faf6ef; --ink:#3d3229; --soft:#8a7a68; --line:#e8ddcc;
+    --accent:#b56a4c; --accent-soft:#f3e2d8; --card:#fffdf9; --gold:#a58a52;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{background:var(--cream);color:var(--ink);font-family:"PingFang SC","Microsoft YaHei",serif;line-height:1.8}
+  .wrap{max-width:660px;margin:0 auto;padding:0 20px 60px}
+  header{padding:50px 0 6px;text-align:center}
+  .mark{display:inline-block;width:52px;height:52px;line-height:52px;border:1.5px solid var(--accent);border-radius:50%;color:var(--accent);font-size:24px;font-weight:700;margin-bottom:14px;font-family:"STKaiti","KaiTi",serif}
+  h1{font-size:32px;font-weight:700;letter-spacing:6px;color:var(--ink)}
+  .brand-en{font-size:12px;letter-spacing:3px;color:var(--gold);margin-top:6px}
+  .studio{font-size:13px;color:var(--soft);margin-top:12px;letter-spacing:2px}
+  .slogan{margin-top:16px;font-size:16px;color:var(--accent);font-weight:600;letter-spacing:2px}
+  .slogan-en{font-size:11.5px;color:var(--soft);letter-spacing:1px;margin-top:4px;font-style:italic}
+  .divider{width:44px;height:3px;background:var(--accent);border-radius:2px;margin:20px auto 0}
+  .guide{margin:22px auto 0;max-width:560px;text-align:center;font-size:13.5px;color:var(--soft)}
+  .guide p{margin-bottom:6px}
+  .searchbox{margin:22px 0 8px}
+  input[type=text]{width:100%;padding:13px 18px;border:1.5px solid var(--line);border-radius:24px;background:var(--card);font-size:15px;color:var(--ink);outline:none;transition:border .2s}
+  input[type=text]:focus{border-color:var(--accent)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:14px 0 4px}
+  .chip{padding:6px 14px;border-radius:16px;background:var(--card);border:1px solid var(--line);font-size:13px;color:var(--soft);cursor:pointer;transition:all .2s;user-select:none}
+  .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .count{text-align:center;color:var(--soft);font-size:12px;margin:10px 0 20px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;margin-bottom:18px;overflow:hidden;box-shadow:0 2px 10px rgba(90,70,50,.05)}
+  .book-head{padding:20px 20px 14px;cursor:pointer}
+  .book-no{font-size:11px;letter-spacing:2px;color:var(--accent)}
+  .book-title{font-size:19px;font-weight:700;margin:4px 0 2px}
+  .book-author{font-size:13px;color:var(--soft)}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .tag{font-size:12px;padding:3px 10px;border-radius:12px;background:var(--accent-soft);color:var(--accent)}
+  .more{display:block;text-align:center;color:var(--accent);font-size:13px;padding:0 0 14px;cursor:pointer}
+  .body{display:none;padding:2px 20px 20px;border-top:1px dashed var(--line)}
+  .body.show{display:block;animation:fade .3s}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .sec{margin-top:14px}
+  .sec h3{font-size:14px;color:var(--accent);margin-bottom:4px;letter-spacing:1px}
+  .sec p{font-size:14.5px}
+  .final{margin-top:18px;padding:14px 16px;background:var(--accent-soft);border-radius:12px;font-size:14.5px;font-weight:600;color:var(--ink)}
+  .about{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px 22px;margin-top:34px}
+  .about h2{font-size:18px;text-align:center;letter-spacing:3px;color:var(--ink);margin-bottom:4px}
+  .about .about-en-title{text-align:center;font-size:11px;letter-spacing:2px;color:var(--gold);margin-bottom:16px}
+  .about p{font-size:14px;margin-bottom:10px;text-align:justify}
+  .about .en{color:var(--soft);font-size:13px}
+  footer{margin-top:44px;text-align:center;color:var(--soft);font-size:12.5px}
+  .foot-slogan{font-size:14px;color:var(--ink);font-weight:600;letter-spacing:2px;margin-bottom:2px}
+  .foot-slogan-en{font-style:italic;font-size:11.5px;margin-bottom:12px}
+  .foot-note{font-size:11.5px;color:var(--soft);border-top:1px dashed var(--line);padding-top:14px;margin-top:14px}
+  .empty{text-align:center;color:var(--soft);padding:40px 0;display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="mark">绘</div>
+    <h1>艾玛绘心答</h1>
+    <div class="brand-en">EMMA'S HEART ANSWERS</div>
+    <div class="studio">艾玛阅读馆 · EMMA READING STUDIO</div>
+    <div class="slogan">一本绘本，解开养育心结</div>
+    <div class="slogan-en">One story, soothe hearts and connect families.</div>
+    <div class="divider"></div>
+  </header>
+
+  <div class="guide">
+    <p>遇到养育的困惑？输入关键词，看看哪一个绘本故事可以带给你和孩子启发。</p>
+    <p>我们只分享故事感悟与共读思路，绘本原文与图画，请阅读正版书籍。</p>
+  </div>
+
+  <div class="searchbox">
+    <input type="text" id="q" placeholder="搜一搜：孩子不肯洗澡、说了不听、帮倒忙……">
+  </div>
+  <div class="chips" id="chips"></div>
+  <div class="count" id="count"></div>
+  <div id="list"></div>
+  <div class="empty" id="empty">这一类还没有书——正在慢慢写。</div>
+
+  <div class="about" id="about">
+    <h2>关于我</h2>
+    <div class="about-en-title">ABOUT ME</div>
+    <p>很多人问我，为什么偏爱原版英文绘本。</p>
+    <p>于我而言，并不是为了学习一门语言。</p>
+    <p>每一门语言都有它独有的声音节奏与美感。英文绘本里的抑扬顿挫，是故事的一部分；中文文字里含蓄绵长的意境，同样动人。</p>
+    <p>我既是陪伴孩子梳理情绪的心理咨询工作者，也是一名绘本的分享者。</p>
+    <p>我希望在这里，借由绘本故事，安放养育里的困惑。家长可以依自己和孩子当下的心境，自由选择阅读的语言版本，单纯享受共读本身带来的联结与感动。</p>
+    <p class="en">Many people ask why I love original English picture books. For me, it has nothing to do with language learning. Every language carries its own unique rhythm and beauty. The cadence of English words becomes part of the story itself; the subtle, enduring warmth of Chinese prose moves us in its own unmistakable way.</p>
+    <p class="en">I am a counselor who walks with children through their emotions, and a story sharer. My goal here is to ease the stress of parenting through picture books. You can feel free to choose whatever reading language fits your family's mood, and simply savor the bond and warmth you share when you read together.</p>
+  </div>
+
+  <footer>
+    <div class="foot-slogan">故事不分语言，各有韵律之美</div>
+    <div class="foot-slogan-en">Stories transcend words; each tongue holds its own rhythm.</div>
+    <div class="foot-note">
+      本页面仅为绘本导读分享，不提供绘本原文与原图。请购买正版绘本进行完整阅读。<br>
+      爱马讲 · Cola 记 ｜ <span id="date"></span>
+    </div>
+  </footer>
+</div>
+
+<script>
+const BOOKS=[
+{
+  no:"001",
+  title:"Harry the Dirty Dog（好脏的哈利）",
+  author:"Gene Zion 文 / Margaret Bloy Graham 图",
+  scenes:["孩子不肯洗澡","犯了错还是不改","说了好多遍不听"],
+  story:"Harry是一只白底黑点的小狗，它什么都喜欢——除了洗澡。有一天，它一听到浴室里放水的声音，叼起洗澡刷就溜出了家门，把刷子埋在后院，然后满城疯玩：铁路边、工地上、跟别的狗赛跑、滑滑梯……玩到又脏又饿，白底黑点变成了黑底白点。它累了，想回家了。可是到了家门口，一家人看着这只陌生的黑狗直摇头：\"我们家Harry是白底黑点的，跑了；这只是黑底白点的，不是我们的。\"Harry使出全身解数：倒立、装死、打滚、唱歌——还是不行。它只好跑到后院，刨出那把洗澡刷，叼着它冲上楼，跳进浴缸。家人追上来，给它洗了一个痛快的澡——泡沫散开，白底黑点的Harry回来了。\"哎呀，原来是Harry！\"那天晚上，Harry睡得特别香。最后一页：那把刷子，又被它悄悄藏在了枕头底下。",
+  insight:"故事到这里好像该结束了：小狗吃了苦头，从此爱上洗澡，皆大欢喜。可是翻到最后一页——Harry把那把洗澡刷，悄悄藏在了枕头底下。它还是不爱洗澡。这一页几乎是整本书最温柔的真相：孩子不会因为一次教训就立刻改变。\"讲了这么多遍怎么还不懂\"——不是孩子故意气你，是改变本来就需要时间，甚至会反复。犯错的第二天就脱胎换骨的孩子，只在家长的幻想里存在。所以这本书想说的不是\"孩子会改\"，而是——大人需要一而再、再而三的耐心。重复不是失败，重复就是教养本来的样子。",
+  psych:"伯克《毕生发展心理学》幼儿期章节：埃里克森\"主动性对内疚\"（3-6岁）——孩子在主动做事、探索世界中发展目的感和责任感；批评过多、控制太强，孩子会觉得渺小、不敢做决定。Harry溜出去玩一整天，正是主动性满格的探索。心理学里还有个关键区分：适当内疚（guilt）≠羞耻（shame）——指出后果、给出弥补出路，孩子做错了肯弥补；Harry最后自己跑进浴室，正是健康内疚驱动的主动弥补，不是被罚出来的，是自己想通的。",
+  tips:"①读到最后一页，停下来，别说话。让孩子自己看见那只藏起来的刷子。问一句：\"咦？Harry在干什么呀？\"——让孩子自己发现，比家长讲出来有力一百倍。②不用急着教育：\"你看Harry就是不听话才……\"——让孩子笑Harry、心疼Harry，共鸣就够了，启发留给最后一页。③可以问大一点的孩子：\"你说Harry下次会乖乖洗澡吗？\"——答\"不会\"的孩子，恰恰读懂了这本书。",
+  final:"孩子不是一次教训就能改好的。"
+},
+{
+  no:"002",
+  title:"I Love You, My Stinky Face（我爱你，臭臭脸）",
+  author:"Lisa McCourt 文 / Cyd Moore 图",
+  scenes:["孩子反复问你还爱不爱他","担心自己爱孩子带着要求","孩子试探你的底线"],
+  story:"睡觉前，小男孩搂着妈妈，一个接一个地问\"万一\"：\"如果我是一只很大很吓人的大猩猩呢？\"——\"那我就用香蕉给你做一个生日蛋糕，然后告诉你：我爱你，我吓人的大猩猩。\"\"如果我是一只臭得不得了的臭鼬呢？\"——\"那我就给你洗一个满是泡泡的澡，洗干净了照样紧紧抱住你。\"\"如果我是一只长着尖尖牙齿的短吻鳄呢？\"\"如果我是一个从火星来的绿皮肤外星人呢？\"——妈妈的答案一个比一个奇妙，一次都没有躲开：每一个\"最坏的样子\"，她都接住，并且爱得具体。最后，男孩安心地睡着了——他确认过了：不管我变成什么，妈妈都爱我。",
+  insight:"这个系列最动人的画面藏在细节里——仔细看，小男孩说的那些可怕的东西：大猩猩、臭鼬、短吻鳄、外星人，其实都是他身边的小玩具。孩子的\"可怕假设\"从来不是真的要变成怪兽——那是他在用游戏试探爱的边界：\"我把最坏的样子摆出来，你还接得住吗？\"他问得越吓人，心里越需要一句笃定的回答。而这位妈妈示范了两个了不起的技术：一、她从不纠正——她不说\"你才不是什么臭鼬\"，她把每一个\"万一\"都当成真的来接。接住问题本身，比纠正问题重要。二、她的爱答得具体——不是干巴巴一句\"妈妈当然爱你\"，而是\"用香蕉给你做生日蛋糕\"\"给你洗满是泡泡的澡\"——无条件的爱不是一种感觉，是一个个具体的动作。孩子要听的不是结论，是\"到时候你会为我做什么\"。很多家长看完这本书都会说：道理懂，做起来难——我们对孩子的爱，常常还是带着要求的。这本书不审判家长，它只给你一个可以练习的方向：下一次孩子拿\"最坏的样子\"来试探你的时候，试着先接住，再教育。",
+  psych:"伯克·依恋理论（鲍尔比/安斯沃思）：核心概念是\"安全基地\"——孩子确定\"回得来\"，才敢走得更远。孩子抛出一个个\"最坏的万一\"，不是胡闹，是在反复确认基地还稳不稳；妈妈的每个回答都接得住，就是一次依恋再确认。安全基地稳了，孩子才敢离开它去探索世界。",
+  tips:"①让孩子问，你来答。这本书天生是亲子对话剧本——孩子问\"万一我是……\"，你学书里妈妈那样答得具体：\"那我就给你做……\"答案越具体，孩子越安心。②孩子问到第三四个\"万一\"还不停，别烦——他不是在捣乱，是在反复确认。确认的次数，就是他需要的量。③读到画面时可以停一停问：\"咦，这个大猩猩是不是他的玩具呀？\"——让孩子自己发现\"原来怪兽是玩具\"，恐惧就变小了。",
+  final:"孩子问\"你还爱我吗\"的时候，他不是要一个答案，是要看你接不接得住他最坏的样子。"
+},
+{
+  no:"003",
+  title:"Little Critter系列（小怪物）· Just for You《只是为你》",
+  author:"Mercer Mayer",
+  scenes:["孩子帮倒忙","好心办事搞砸了大人发火","怎么不摆脸色"],
+  story:"《Just for You》：Little Critter想为妈妈做点好事：早起做早餐——厨房变成灾难现场；帮妈妈拿东西——撒了一路；帮忙干活——干一样砸一样。每一件都出于真心，每一件都搞砸了。《Just Me and My Dad》：他跟爸爸出门干活，剪草坪剪掉了花；陪爸爸买钉子，\"试一试\"之间，一锤子把钉子直接钉进了店里的地板。系列里每一本的结尾都一样：他仰着头，问大人：\"我是不是做了好多好多事呀？\"大人说：\"是啊。\"然后他带着心满意足的笑容，安心地睡着了。",
+  insight:"这个系列最值钱的，不是情节，是Little Critter爸妈的表情——皱着眉，嘴角却在笑，眼睛里没有责备，只有\"哇，这是我做的\"的欣赏。因为大人和孩子看到的根本不是同一件事：家长看到的是厨房毁了、花剪没了；孩子给出的是\"我在帮你们，我在爱你们\"。\"帮倒忙\"这个词本身就带着滤镜——它默认孩子的行为是\"忙\"，倒的只是效果。拿掉滤镜看：孩子给出的原料从头到尾只有一样，就是爱；效果不好，只是手艺问题。手艺会长，爱不用教。最后一笔最戳人：孩子睡前那句\"我是不是做了好多事呀？\"——他不是在邀功，是在等一个确认：\"我是个好孩子，对吗？\"大人没有趁机教育，没有一个\"但是\"，就一句\"是啊\"。他睡得那么香，因为他不用带着\"我是不是坏孩子\"的疑问入睡。一句\"是啊\"，比一百句\"下次注意\"更能让孩子把好事做下去。",
+  psych:"伯克·学龄期\"勤奋对自卑\"（6-11岁）：鼓励孩子达成目标并给出反馈，孩子会认为自己勤奋、有信心；一味惩罚责骂，孩子害怕失败、产生自卑，不敢尝试新任务。Critter爸妈\"皱眉但眼里欣赏\"的表情，就是\"给反馈\"最温柔的样子。教养类型上（Baumrind四型），Critter爸爸那句没有\"但是\"的\"是啊\"，正是权威型（高温暖+合理要求）的示范——研究里结果最好的那一型。孩子睡前那句\"我是不是做了好多事呀\"，问的其实是自我价值感的塔底：\"我是个好孩子吗？\"",
+  tips:"①读到闯祸的跨页时停下来，让孩子看爸妈的脸：\"你看爸爸妈妈的表情，是什么样的？\"——孩子会替你读出那个欣赏。②问孩子：\"小怪物为什么睡得这么香呀？\"——听他怎么答，你会知道他心里最想要的是哪句确认。③给家长自己留一句：今晚孩子再\"帮倒忙\"的时候，在发火之前，先想一下Critter爸爸那句\"是啊\"。",
+  final:"孩子闯的祸是手艺问题，孩子给的爱是真的——\"是啊\"两个字，就能让他安心睡着。"
+},
+{
+  no:"004",
+  title:"The Tiger Who Came to Tea《老虎来喝下午茶》",
+  author:"Judith Kerr 朱迪斯·克尔",
+  scenes:["孩子说家里东西被XX吃了","想纠正孩子根本没有老虎","保护想象力","孩子有想象中的朋友"],
+  story:"dinner时间，门铃响了——来了一只毛茸茸的大老虎。它喝光了下午茶，吃光了所有三明治和小蛋糕，连爸爸的晚餐和啤酒也没放过，最后还把水龙头里的水喝了个精光。爸爸下班回家，没饭吃了。妈妈说家里一点东西都没有，小索菲告诉爸爸：都被老虎吃掉了。爸爸说：那我们就出去吃吧。一家三口去餐馆吃了晚餐。第二天早上，妈妈买回来一大罐老虎粮——放在厨房，以防它再来。",
+  insight:"大多数人读这本书，读出的是童心、友善、接纳。这些都对，但真正让人停在那一页很久的，是爸爸的那个反应——妈妈说家里没东西了，索菲说\"都被老虎吃掉了\"。爸爸什么都没问。没问\"老虎长什么样\"\"它从哪儿进来\"\"哪有什么老虎\"——他就说了一句：\"好的，那我们一起出去吃吧。\"然后全家就真的去餐馆吃了晚餐。还有两个容易被翻过去的细节：妈妈从头到尾没有戳穿过一次；第二天妈妈买了老虎罐头放在厨房——那意思是在说：这条门，随时为想象开着。对大人的逻辑来说，\"都被老虎吃掉了\"是个待核查的事实陈述；可对孩子来说，它是当下最真实的叙事。爸爸没有当事实核查员，他当了一个愿意一起去餐馆吃的大人。想象被招待了，才敢继续长大。",
+  psych:"伯克·前运算阶段（2-7岁）的泛灵论与假装游戏：孩子会把生命和意图赋予不存在的东西，\"老虎来过\"对孩子来说是真实的叙事——这不是糊涂，是认知发展的正常台阶。假装游戏是发展的加速器，不是要纠正的错误：伯克书里引的研究方向一致——有想象伙伴、假装游戏丰富的孩子，在心理理论、语言、创造力上往往发展得更好。至于\"孩子什么时候能分清真假\"——那是随年龄自然发育出来的（小学前后逐步完成），不是教出来的，更不是考出来的。纠正只会教孩子闭嘴，不会加速分辨：大人反复说\"根本没有老虎\"，孩子学到的不是\"世界没有老虎\"，而是\"我说的话，妈妈不信\"。",
+  tips:"①加入，比提问好。读到老虎吃光那里，问孩子：\"你猜它还会吃什么呀？\"——这是加入他的叙事；而\"你信不信真的有老虎\"是考校。前者长想象力，后者长戒心。②孩子生活中说\"都是老虎干的\"，顺着接一步就好：\"那老虎可真能吃呀。\"不用每次都对齐现实——界限用生活慢慢给，比如收拾碗筷时开个玩笑：\"老虎虽然没来，碗还是要洗的哦。\"③如果孩子有想象中的朋友，给它留个位置——被招待过的想象，才会安安稳稳地陪孩子长大，然后自己体面地离开。",
+  final:"孩子说\"都被老虎吃了\"的时候，他不需要一位真相核查员，他需要一个愿意一起出去吃的大人。"
+}];
+
+const list=document.getElementById('list'),q=document.getElementById('q'),chips=document.getElementById('chips'),count=document.getElementById('count'),empty=document.getElementById('empty');
+let activeTag=null;
+
+const allScenes=[...new Set(BOOKS.flatMap(b=>b.scenes))];
+allScenes.forEach(s=>{
+  const c=document.createElement('div');c.className='chip';c.textContent=s;
+  c.onclick=()=>{activeTag=(activeTag===s)?null:s;[...chips.children].forEach(x=>x.classList.toggle('on',x.textContent===activeTag));render();};
+  chips.appendChild(c);
+});
+
+function card(b){
+  const el=document.createElement('div');el.className='card';
+  el.innerHTML=`
+    <div class="book-head">
+      <div class="book-no">NO.${b.no}</div>
+      <div class="book-title">${b.title}</div>
+      <div class="book-author">${b.author}</div>
+      <div class="tags">${b.scenes.map(s=>`<span class="tag">${s}</span>`).join('')}</div>
+    </div>
+    <div class="more" onclick="this.nextElementSibling.classList.toggle('show');this.textContent=this.nextElementSibling.classList.contains('show')?'收起 ▲':'展开这本书 ▼'">展开这本书 ▼</div>
+    <div class="body">
+      <div class="sec"><h3>📖 故事大概</h3><p>${b.story}</p></div>
+      <div class="sec"><h3>💡 给家长的启发</h3><p>${b.insight}</p></div>
+      <div class="sec"><h3>🔬 心理学底座</h3><p>${b.psych}</p></div>
+      <div class="sec"><h3>🤲 共读小贴士</h3><p>${b.tips}</p></div>
+      <div class="final">${b.final}</div>
+    </div>`;
+  el.querySelector('.book-head').onclick=()=>{const body=el.querySelector('.body');body.classList.toggle('show');el.querySelector('.more').textContent=body.classList.contains('show')?'收起 ▲':'展开这本书 ▼';};
+  return el;
+}
+
+function render(){
+  const kw=(q.value||'').trim().toLowerCase();
+  list.innerHTML='';
+  let n=0;
+  BOOKS.forEach(b=>{
+    const hay=(b.title+b.author+b.scenes.join('')+b.story+b.insight+b.psych+b.tips+b.final).toLowerCase();
+    if(activeTag&&!b.scenes.includes(activeTag))return;
+    if(kw&&!hay.includes(kw))return;
+    list.appendChild(card(b));n++;
+  });
+  count.textContent=n?`共 ${n} 本`:'';
+  empty.style.display=n?'none':'block';
+}
+q.addEventListener('input',render);
+document.getElementById('date').textContent='更新至 2026-09-25 · 现有 4 本';
+render();
+</script>
+</body>
+</html>
