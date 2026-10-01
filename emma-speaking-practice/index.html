@@ -138,7 +138,7 @@
       </div>
     </section>
 
-    <p class="footnote">这个网页只播放英文问题，不会录下或上传孩子的声音，也不会自动评分。口头回答后，再用参考答案自查。</p>
+    <p class="footnote">这个网页播放的是 EMMA 老师的原声录音，每次打开题目顺序都会打乱。它不会录下或上传孩子的声音，也不会自动评分。口头回答后，再用参考答案自查。</p>
   </main>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -163,9 +163,22 @@
       { q: 'Is your mom at home?', category: 'Is your mom 问答', answers: ['Yes, she is.', "No, she isn't."], note: '回答时用 she。' }
     ];
 
+    // 教师原声：q01–q14 对应上面前 14 题（按清单顺序）；q15、q16 待补录，暂用系统合成音兜底
+    questions.forEach((item, i) => {
+      item.audio = i < 14 ? `audio/q${String(i + 1).padStart(2, '0')}.mp3` : null;
+    });
+
+    // 每次打开网页，题目顺序随机打乱
+    for (let i = questions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [questions[i], questions[j]] = [questions[j], questions[i]];
+    }
+
     let current = 0;
     let slow = true;
     let toastTimer;
+    const questionAudio = new Audio();
+    questionAudio.preload = 'auto';
     const counter = document.getElementById('counter');
     const category = document.getElementById('category');
     const progress = document.querySelector('.progress');
@@ -218,6 +231,7 @@
       prevButton.disabled = current === 0;
       prevButton.style.opacity = current === 0 ? '.48' : '1';
       nextButton.textContent = current === questions.length - 1 ? '再练一遍 ↺' : '下一题 →';
+      questionAudio.pause();
       if (window.speechSynthesis) window.speechSynthesis.cancel();
     }
 
@@ -228,7 +242,7 @@
       toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
     }
 
-    document.getElementById('playButton').addEventListener('click', () => {
+    function speakWithTTS(text) {
       if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
         questionText.hidden = false;
         textButton.textContent = '隐藏英文问句';
@@ -237,7 +251,7 @@
         return;
       }
       window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(questions[current].q);
+      const utterance = new SpeechSynthesisUtterance(text);
       const voices = window.speechSynthesis.getVoices();
       const englishVoice = voices.find(voice => /^en[-_]/i.test(voice.lang));
       if (englishVoice) {
@@ -249,6 +263,21 @@
       utterance.rate = slow ? 0.78 : 1;
       utterance.pitch = 1;
       window.speechSynthesis.speak(utterance);
+    }
+
+    document.getElementById('playButton').addEventListener('click', () => {
+      const item = questions[current];
+      if (item.audio) {
+        questionAudio.pause();
+        if (!questionAudio.src || questionAudio.src.lastIndexOf(item.audio) !== questionAudio.src.length - item.audio.length) {
+          questionAudio.src = item.audio;
+        }
+        questionAudio.playbackRate = slow ? 0.78 : 1;
+        questionAudio.currentTime = 0;
+        questionAudio.play().catch(() => speakWithTTS(item.q));
+      } else {
+        speakWithTTS(item.q);
+      }
     });
 
     textButton.addEventListener('click', () => {
@@ -269,6 +298,7 @@
       slow = !slow;
       speedButton.textContent = slow ? '语速：慢速' : '语速：自然';
       speedButton.setAttribute('aria-pressed', String(!slow));
+      questionAudio.playbackRate = slow ? 0.78 : 1;
       showToast(slow ? '已切换到慢速。' : '已切换到自然语速。');
     });
 
