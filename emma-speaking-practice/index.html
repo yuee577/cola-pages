@@ -163,9 +163,9 @@
       { q: 'Is your mom at home?', category: 'Is your mom 问答', answers: ['Yes, she is.', "No, she isn't."], note: '回答时用 she。' }
     ];
 
-    // 教师原声：q01–q14 对应上面前 14 题（按清单顺序）；q15、q16 待补录，暂用系统合成音兜底
+    // 教师原声：q01–q16 对应上面 16 题（按清单顺序）
     questions.forEach((item, i) => {
-      item.audio = i < 14 ? `audio/q${String(i + 1).padStart(2, '0')}.mp3` : null;
+      item.audio = `audio/q${String(i + 1).padStart(2, '0')}.mp3`;
     });
 
     // 每次打开网页，题目顺序随机打乱
