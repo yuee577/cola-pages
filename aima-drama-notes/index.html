@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>爱马追剧口语本</title>
+<style>
+  :root {
+    --ink: #2b2a26; --muted: #7a766c; --paper: #f6f2e9; --card: #fffdf7;
+    --orange: #d96f3f; --orange-dark: #b85a2f; --cream: #f3e7d3;
+    --line: #e8e0d0; --teal: #3f6e63; --shadow: 0 16px 44px rgba(70,50,30,.10);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; color: var(--ink); background: var(--paper);
+    font-family: "Segoe UI", "Microsoft YaHei", sans-serif; -webkit-font-smoothing: antialiased;
+  }
+  button { font: inherit; }
+  .page { width: min(100% - 24px, 720px); margin: 0 auto; padding: 20px 0 40px; }
+  .top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+  .brand { font-size: 13px; font-weight: 800; letter-spacing: .14em; color: var(--orange); }
+  .sub { color: var(--muted); font-size: 12px; }
+  h1 { margin: 2px 0 6px; font-size: clamp(24px, 6vw, 34px); letter-spacing: -.02em; }
+  .lead { margin: 0 0 16px; color: var(--muted); font-size: 14px; line-height: 1.6; }
+  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .tb {
+    min-height: 40px; padding: 8px 13px; border: 1.5px solid var(--line); border-radius: 999px;
+    background: var(--card); color: var(--ink); font-weight: 700; font-size: 13px; cursor: pointer;
+  }
+  .tb.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .tb:focus-visible { outline: 3px solid rgba(217,111,63,.4); }
+  .count { color: var(--muted); font-size: 12px; align-self: center; }
+  .note { border: 1px solid var(--line); border-radius: 18px; background: var(--card); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 16px; }
+  .head { display: flex; justify-content: space-between; align-items: center; padding: 13px 16px 0; gap: 8px; }
+  .tag { padding: 4px 10px; border-radius: 999px; background: var(--cream); color: #8a6a3f; font-size: 11px; font-weight: 800; }
+  .play {
+    display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 8px 15px;
+    border: 0; border-radius: 13px; background: var(--orange); color: #fff; font-weight: 800; font-size: 14px; cursor: pointer;
+  }
+  .play:active { transform: translateY(1px); }
+  .body { padding: 12px 16px 0; }
+  .en { font-size: clamp(19px, 5vw, 26px); font-weight: 750; line-height: 1.35; letter-spacing: -.01em; }
+  .en.masked .real { visibility: hidden; }
+  .en .hint { color: #c9b98f; }
+  .zh { margin-top: 10px; padding: 10px 12px; border-radius: 12px; background: #faf6ec; color: #6a614c; font-size: 14px; line-height: 1.55; }
+  .zh[hidden] { display: none; }
+  .who { margin-top: 9px; color: var(--muted); font-size: 12px; }
+  .parse { margin: 12px 16px; padding: 11px 13px; border-left: 4px solid var(--orange); border-radius: 10px; background: #fbf3e6; }
+  .parse b { display: block; margin-bottom: 5px; color: var(--orange-dark); font-size: 12px; letter-spacing: .05em; }
+  .parse p { margin: 4px 0; font-size: 13px; line-height: 1.6; color: #5d5344; }
+  .parse .ln { color: var(--orange-dark); font-weight: 700; }
+  .foot { padding: 0 16px 15px; }
+  .how { border: 1.5px dashed #d9c9a8; border-radius: 18px; padding: 15px 17px; background: #fdf9ef; }
+  .how h2 { margin: 0 0 8px; font-size: 15px; color: var(--orange-dark); }
+  .how ol { margin: 0; padding-left: 20px; color: #6a614c; font-size: 13px; line-height: 1.8; }
+  .how .k { color: var(--ink); font-weight: 700; }
+  .empty { text-align: center; color: var(--muted); padding: 30px 0; }
+  .toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom)); transform: translate(-50%, 12px);
+    max-width: calc(100% - 30px); padding: 10px 15px; border-radius: 12px; background: #3a352c; color: #fff;
+    font-size: 13px; opacity: 0; pointer-events: none; transition: all .18s; text-align: center; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+</style>
+</head>
+<body>
+<main class="page">
+  <div class="top"><span class="brand">EMMA · DRAMA NOTES</span><span class="sub">自己的剧，自己的句子</span></div>
+  <h1>追剧口语本</h1>
+  <p class="lead">看《降世神通》时捞下来的句子，都存在这里。遮住英文考自己，点开听发音，跟着读一遍。</p>
+
+  <div class="toolbar">
+    <button class="tb" id="maskBtn" type="button" aria-pressed="false">🙈 遮住英文，考自己</button>
+    <button class="tb on" id="slowBtn" type="button" aria-pressed="true">语速：慢速</button>
+    <span class="count" id="count"></span>
+  </div>
+
+  <div id="list"></div>
+
+  <section class="how">
+    <h2>📌 怎么往里加新句子</h2>
+    <ol>
+      <li>看《降世神通》时遇到<span class="k">想学的句子</span>，手机截屏（一句话跨两个画面就截两张）；</li>
+      <li>把截图发给 <span class="k">Cola</span>，想说为什么喜欢它也可以说；</li>
+      <li>Cola 拆好连读弱读、配好中文，更新到这个网页——<span class="k">你只管按截图</span>。</li>
+    </ol>
+  </section>
+</main>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+  const entries = [
+    {
+      en: "Long ago, the four nations lived together in harmony.",
+      zh: "很久以前，四大国和谐共处。",
+      who: "《降世神通》开场旁白 · S1",
+      parse: ["<span class='ln'>Long‿ago</span>：连读成 /lɔŋ‿əˈɡoʊ/，g 直接滑过去，中间不停", "lived /d/ + together：d 只摆口型不发音，轻轻带过", "in harmony：重音在 har-，前面的 in 读得又轻又短"]
+    },
+    {
+      en: "Then, everything changed when the Fire Nation attacked.",
+      zh: "后来，烈火国发动进攻，一切都变了。",
+      who: "《降世神通》开场旁白 · S1",
+      parse: ["<span class='ln'>changed‿when</span>：连读 /tʃeɪndʒd‿wen/，-ed 的 /d/ 和 w 顺滑相接", "attacked 结尾的 /t/ 几乎不爆破——气到了嘴边就收住，这是英语的“吞音”", "Fire 注意是双元音 /faɪər/，别读成“法尔”"]
+    },
+    {
+      en: "Only the Avatar, master of all four elements, could stop them.",
+      zh: "只有神通王——四种元素的宗师——才能阻止他们。",
+      who: "《降世神通》开场旁白 · S1",
+      parse: ["<span class='ln'>master‿of‿all</span>：连着两处连读 /ˈmæstər‿əv‿ɔːl/，一口气带过", "could stop them：them 的 th 舌尖轻碰牙齿，弱读成 /ðəm/", "整句的重点落在 could 上——语气词的强调，比单词更重要"]
+    }
+  ];
+
+  let order = entries.map((_, i) => i);
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  let mask = false, slow = true;
+  const audio = new Audio(); audio.preload = 'none';
+  const list = document.getElementById('list');
+  const count = document.getElementById('count');
+  const toast = document.getElementById('toast');
+  let toastTimer;
+
+  function showToast(msg) {
+    toast.textContent = msg; toast.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+
+  function render() {
+    count.textContent = entries.length + " 句";
+    list.innerHTML = '';
+    order.forEach(idx => {
+      const e = entries[idx];
+      const d = document.createElement('div'); d.className = 'note';
+      d.innerHTML = `
+        <div class="head"><span class="tag">${idx + 1}</span>
+          <button class="play" type="button" data-i="${idx}">▶ 听</button></div>
+        <div class="body">
+          <p class="en ${mask ? 'masked' : ''}" data-en><span class="real">${e.en}</span>${mask ? '<span class="hint">（先想：这句英文怎么说？）</span>' : ''}</p>
+          <p class="zh" data-zh hidden>${e.zh}</p>
+          <p class="who">📍 ${e.who}</p>
+        </div>
+        <div class="parse"><b>🎙 发音拆解</b>${e.parse.map(p => `<p>${p}</p>`).join('')}</div>
+        <div class="foot"><button class="tb" type="button" data-zh-btn="${idx}">看中文意思</button></div>`;
+      list.appendChild(d);
+    });
+  }
+
+  list.addEventListener('click', ev => {
+    const play = ev.target.closest('.play');
+    if (play) {
+      const e = entries[+play.dataset.i];
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(e.en);
+        const v = window.speechSynthesis.getVoices().find(v => /^en[-_]/i.test(v.lang));
+        if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = 'en-US'; }
+        u.rate = slow ? 0.75 : 1;
+        window.speechSynthesis.speak(u);
+      } else { showToast('这台设备不支持播放，看文字跟读吧'); }
+      return;
+    }
+    const zb = ev.target.closest('[data-zh-btn]');
+    if (zb) {
+      const card = zb.closest('.note');
+      const zh = card.querySelector('[data-zh]');
+      zh.hidden = !zh.hidden;
+      zb.textContent = zh.hidden ? '看中文意思' : '收起中文';
+    }
+  });
+
+  document.getElementById('maskBtn').addEventListener('click', function () {
+    mask = !mask; this.classList.toggle('on', mask);
+    this.setAttribute('aria-pressed', String(mask));
+    showToast(mask ? '已遮住英文——先看中文，想出来说出来！' : '英文已显示');
+    render();
+  });
+  document.getElementById('slowBtn').addEventListener('click', function () {
+    slow = !slow; this.classList.toggle('on', slow);
+    this.setAttribute('aria-pressed', String(slow));
+    this.textContent = slow ? '语速：慢速' : '语速：自然';
+  });
+
+  render();
+</script>
+</body>
+</html>
