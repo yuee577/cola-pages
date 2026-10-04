@@ -132,6 +132,9 @@
     }
   ];
 
+  // 原声：q01–q07 对应上面 7 句（剪自第一集视频）
+  entries.forEach((e, i) => { e.audio = `audio/q${String(i + 1).padStart(2, '0')}.mp3`; });
+
   let order = entries.map((_, i) => i);
   for (let i = order.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -139,6 +142,7 @@
   }
   let mask = false, slow = true;
   const audio = new Audio(); audio.preload = 'none';
+  const dramaAudio = new Audio(); dramaAudio.preload = 'auto';
   const list = document.getElementById('list');
   const count = document.getElementById('count');
   const toast = document.getElementById('toast');
@@ -150,7 +154,8 @@
   }
 
   function render() {
-    count.textContent = entries.length + " 句";
+    count.textContent = entries.length + " 句（原声）";
+    dramaAudio.pause();
     list.innerHTML = '';
     order.forEach(idx => {
       const e = entries[idx];
@@ -173,14 +178,17 @@
     const play = ev.target.closest('.play');
     if (play) {
       const e = entries[+play.dataset.i];
-      if (window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(e.en);
-        const v = window.speechSynthesis.getVoices().find(v => /^en[-_]/i.test(v.lang));
-        if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = 'en-US'; }
-        u.rate = slow ? 0.75 : 1;
-        window.speechSynthesis.speak(u);
-      } else { showToast('这台设备不支持播放，看文字跟读吧'); }
+      if (e.audio) {
+        dramaAudio.pause();
+        if (!dramaAudio.src || dramaAudio.src.lastIndexOf(e.audio) !== dramaAudio.src.length - e.audio.length) {
+          dramaAudio.src = e.audio;
+        }
+        dramaAudio.playbackRate = slow ? 0.75 : 1;
+        dramaAudio.currentTime = 0;
+        dramaAudio.play().catch(() => speak(e));
+      } else {
+        speak(e);
+      }
       return;
     }
     const zb = ev.target.closest('[data-zh-btn]');
@@ -192,6 +200,17 @@
     }
   });
 
+  function speak(e) {
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(e.en);
+      const v = window.speechSynthesis.getVoices().find(v => /^en[-_]/i.test(v.lang));
+      if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = 'en-US'; }
+      u.rate = slow ? 0.75 : 1;
+      window.speechSynthesis.speak(u);
+    } else { showToast('这台设备不支持播放，看文字跟读吧'); }
+  }
+
   document.getElementById('maskBtn').addEventListener('click', function () {
     mask = !mask; this.classList.toggle('on', mask);
     this.setAttribute('aria-pressed', String(mask));
@@ -202,6 +221,7 @@
     slow = !slow; this.classList.toggle('on', slow);
     this.setAttribute('aria-pressed', String(slow));
     this.textContent = slow ? '语速：慢速' : '语速：自然';
+    dramaAudio.playbackRate = slow ? 0.75 : 1;
   });
 
   render();
