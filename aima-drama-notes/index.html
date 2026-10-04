@@ -132,9 +132,6 @@
     }
   ];
 
-  // 原声：q01–q07 对应上面 7 句（剪自第一集视频）
-  entries.forEach((e, i) => { e.audio = `audio/q${String(i + 1).padStart(2, '0')}.mp3`; });
-
   let order = entries.map((_, i) => i);
   for (let i = order.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -142,7 +139,6 @@
   }
   let mask = false, slow = true;
   const audio = new Audio(); audio.preload = 'none';
-  const dramaAudio = new Audio(); dramaAudio.preload = 'auto';
   const list = document.getElementById('list');
   const count = document.getElementById('count');
   const toast = document.getElementById('toast');
@@ -154,8 +150,7 @@
   }
 
   function render() {
-    count.textContent = entries.length + " 句（原声）";
-    dramaAudio.pause();
+    count.textContent = entries.length + " 句";
     list.innerHTML = '';
     order.forEach(idx => {
       const e = entries[idx];
@@ -177,18 +172,7 @@
   list.addEventListener('click', ev => {
     const play = ev.target.closest('.play');
     if (play) {
-      const e = entries[+play.dataset.i];
-      if (e.audio) {
-        dramaAudio.pause();
-        if (!dramaAudio.src || dramaAudio.src.lastIndexOf(e.audio) !== dramaAudio.src.length - e.audio.length) {
-          dramaAudio.src = e.audio;
-        }
-        dramaAudio.playbackRate = slow ? 0.75 : 1;
-        dramaAudio.currentTime = 0;
-        dramaAudio.play().catch(() => speak(e));
-      } else {
-        speak(e);
-      }
+      speak(entries[+play.dataset.i]);
       return;
     }
     const zb = ev.target.closest('[data-zh-btn]');
@@ -221,7 +205,6 @@
     slow = !slow; this.classList.toggle('on', slow);
     this.setAttribute('aria-pressed', String(slow));
     this.textContent = slow ? '语速：慢速' : '语速：自然';
-    dramaAudio.playbackRate = slow ? 0.75 : 1;
   });
 
   render();
