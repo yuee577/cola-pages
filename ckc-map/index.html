@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CKC 阅读成长地图</title>
+<style>
+  :root{
+    --sky1:#aee3ff; --sky2:#d9f7e8;
+    --ink:#3a3a4a; --card:#ffffff;
+    --coral:#ff8a65; --sun:#ffc94d; --mint:#4fc3a1; --pink:#ff9ec7; --purple:#a78bfa;
+    --shadow:0 6px 0 rgba(0,0,0,.08);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;color:var(--ink);
+    background:linear-gradient(180deg,var(--sky1),var(--sky2) 60%,#fff7e0);
+    max-width:480px;margin:0 auto;min-height:100vh;padding-bottom:100px;overflow-x:hidden}
+  h1,h2,h3{font-weight:800}
+  button{font-family:inherit;border:none;cursor:pointer}
+
+  /* ===== 顶栏 ===== */
+  .top{display:flex;align-items:center;gap:10px;padding:14px 16px 2px}
+  .avatar{font-size:38px;filter:drop-shadow(0 3px 2px rgba(0,0,0,.15));animation:float 3s ease-in-out infinite}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+  .top .hi{font-size:20px;font-weight:800}
+  .top .hi small{display:block;font-size:12px;color:#6b7a8f;font-weight:normal}
+  .chips{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;padding:8px 16px 2px}
+  .chip{text-align:center;background:#fff;border-radius:999px;padding:5px 0;font-size:11.5px;font-weight:700;box-shadow:var(--shadow)}
+
+  /* ===== 卡片 ===== */
+  .card{background:var(--card);border-radius:22px;margin:12px 14px;padding:16px;box-shadow:0 8px 20px rgba(60,100,140,.12)}
+  .card h2{font-size:17px;margin-bottom:10px}
+  .hint{font-size:12.5px;color:#8a97a8;margin-bottom:10px}
+
+  /* ===== 书架 / 打卡 chips ===== */
+  .optrow{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+  .opt{background:#f2f6fa;border:2px solid transparent;border-radius:16px;padding:9px 14px;font-size:14px;font-weight:700;color:#51606f;transition:.15s}
+  .opt.sel{background:#fff3d6;border-color:var(--sun);color:#b07800;transform:scale(1.05)}
+  .bigbtn{display:block;width:100%;background:linear-gradient(180deg,#ffb14d,#ff8a3d);color:#fff;font-size:20px;
+    font-weight:900;border-radius:20px;padding:14px;box-shadow:0 6px 0 #e0702a;letter-spacing:2px}
+  .bigbtn:active{transform:translateY(4px);box-shadow:0 2px 0 #e0702a}
+  .mintbtn{background:linear-gradient(180deg,#5fd6b2,#3cb892);box-shadow:0 5px 0 #2f9677}
+  .mintbtn:active{transform:translateY(3px);box-shadow:0 2px 0 #2f9677}
+  input[type=text],textarea{width:100%;border:2px solid #e3ecf3;border-radius:14px;padding:10px 12px;font-size:14.5px;
+    font-family:inherit;outline:none;background:#fbfdff}
+  input[type=text]:focus,textarea:focus{border-color:var(--mint)}
+  textarea{resize:none;line-height:1.6}
+  input[type=number]{width:90px;border:2px solid #e3ecf3;border-radius:12px;padding:8px;font-size:15px;font-weight:700;text-align:center}
+
+  /* ===== 地图 ===== */
+  .mapwrap{position:relative}
+  .mapsvg{width:100%;display:block}
+  .isle{cursor:pointer}
+  .isle.dim{opacity:.55}
+  .isle .lock{font-size:15px}
+  .avatarM{animation:bob 1.6s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+  .mailflag{animation:wig 1.2s ease-in-out infinite;transform-origin:center}
+  @keyframes wig{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(10deg)}}
+
+  /* ===== 宠物面板 ===== */
+  .mask{position:fixed;inset:0;background:rgba(30,50,70,.45);z-index:50;display:none}
+  .mask.show{display:block}
+  .sheet{position:fixed;left:0;right:0;bottom:-100%;max-width:480px;margin:0 auto;background:#fff;
+    border-radius:26px 26px 0 0;padding:20px 18px 26px;z-index:51;transition:bottom .28s cubic-bezier(.34,1.4,.6,1)}
+  .sheet.show{bottom:0}
+  .petbig{font-size:74px;text-align:center;cursor:pointer;user-select:none;filter:drop-shadow(0 6px 4px rgba(0,0,0,.15))}
+  .petbig.eat{animation:eat .5s ease 2}
+  @keyframes eat{0%,100%{transform:scale(1)}50%{transform:scale(1.25) rotate(-6deg)}}
+  .bubble{background:#eef7f2;border-radius:16px;padding:12px 14px;font-size:15px;line-height:1.7;margin:12px 0;min-height:58px;position:relative}
+  .bubble::before{content:'';position:absolute;top:-9px;left:50%;margin-left:-9px;border:9px solid transparent;border-bottom-color:#eef7f2;border-top:none}
+  .petrow{display:flex;gap:10px}
+  .petrow .pbtn{flex:1;border-radius:16px;padding:12px;font-size:15px;font-weight:800;color:#fff}
+  .pbtn.feed{background:linear-gradient(180deg,#ffb14d,#ff8a3d);box-shadow:0 4px 0 #e0702a}
+  .pbtn.talk{background:linear-gradient(180deg,#5fd6b2,#3cb892);box-shadow:0 4px 0 #2f9677}
+  .pbtn:disabled{filter:grayscale(.7);opacity:.6}
+  .petname{text-align:center;font-size:19px;font-weight:900;margin-top:4px}
+  .petrole{text-align:center;font-size:12.5px;color:#93a3b5;margin-bottom:6px}
+
+  /* ===== 书架 ===== */
+  .shelfhead{display:flex;align-items:center;gap:8px;padding:4px 2px 8px;font-size:15.5px;font-weight:800}
+  .book{display:flex;align-items:center;gap:10px;background:#f7fafc;border-radius:16px;padding:10px 12px;margin-bottom:8px}
+  .book .bico{font-size:26px}
+  .book .btitle{flex:1;font-size:14.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .book .btitle.done{color:#9aa7b5;text-decoration:line-through}
+  .book .brev{font-size:11.5px;color:#8a97a8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-basis:100%}
+  .book .colL{flex:1;min-width:0}
+  .mini{border-radius:12px;padding:7px 10px;font-size:12.5px;font-weight:800;color:#fff;background:#b7c4d2}
+  .mini.gold{background:linear-gradient(180deg,#ffc94d,#f5a623)}
+  .mini.del{background:#ffd2d2;color:#c0392b}
+  .empty{text-align:center;color:#9fb0c0;font-size:13.5px;padding:14px 0}
+
+  /* ===== 底部导航 ===== */
+  .nav{position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:0 auto;background:#fff;
+    display:grid;grid-template-columns:repeat(4,1fr);border-radius:24px 24px 0 0;box-shadow:0 -6px 20px rgba(60,100,140,.15);z-index:40}
+  .nav button{flex:1 1 0;min-width:0;overflow:hidden;background:none;padding:10px 0 12px;font-size:10.5px;font-weight:800;color:#9db0c2;white-space:nowrap}
+  .nav button .ico{display:block;font-size:22px;margin-bottom:1px;filter:grayscale(1);transition:.15s}
+  .nav button.on{color:#ff8a3d}
+  .nav button.on .ico{filter:none;transform:scale(1.15)}
+
+  /* ===== 夸夸卡弹层 ===== */
+  .praise{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(30,50,70,.5)}
+  .praise.show{display:flex}
+  .praisecard{background:linear-gradient(160deg,#fff7e6,#ffe9f1);border-radius:24px;padding:26px 22px;width:82%;max-width:360px;
+    text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.25);animation:pop .45s cubic-bezier(.34,1.5,.6,1)}
+  @keyframes pop{0%{transform:scale(.3);opacity:0}100%{transform:scale(1);opacity:1}}
+  .praisecard .from{font-size:13px;color:#c98a4b;font-weight:800;margin-bottom:8px}
+  .praisecard .ptext{font-size:17px;font-weight:800;line-height:1.8}
+  .praisecard .pdate{font-size:11.5px;color:#b9a58f;margin-top:12px}
+
+  /* ===== 彩带 ===== */
+  .confetti{position:fixed;top:-30px;font-size:22px;z-index:99;pointer-events:none;animation:fall linear forwards}
+  @keyframes fall{to{transform:translateY(105vh) rotate(540deg);opacity:.6}}
+
+  /* ===== 抽屉 ===== */
+  .drawer{position:fixed;inset:0;z-index:70;background:#f4f7fa;display:none;overflow-y:auto;padding:16px 14px 40px}
+  .drawer.show{display:block}
+  .drawer h2{font-size:18px;margin-bottom:4px}
+  .drawer .sec{background:#fff;border-radius:18px;padding:14px;margin-top:12px;box-shadow:0 4px 12px rgba(60,100,140,.08)}
+  .drawer .sec h3{font-size:15px;margin-bottom:8px}
+  .drawer .sec .hint{margin-bottom:6px}
+  .row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+  .row input[type=text]{flex:1}
+  .ledger{font-size:13px;line-height:1.7}
+  .ledger .unpaid{color:#c0392b;font-weight:800}
+  .sm{border-radius:12px;padding:8px 12px;font-size:13px;font-weight:800;color:#fff;background:#5b8def}
+  .sm.gray{background:#b7c4d2}
+  .sm.red{background:#ff8a8a}
+  .drawer textarea{font-size:12px;color:#666}
+
+  /* ===== 小结 ===== */
+  .pitem{margin-bottom:12px}
+  .pitem label{display:block;font-size:14.5px;font-weight:800;margin-bottom:6px}
+  .cookiebadge{display:inline-block;background:#ffe9c9;color:#b07800;border-radius:999px;font-size:11px;padding:2px 8px;font-weight:800;margin-left:6px}
+  .toast{position:fixed;bottom:104px;left:50%;transform:translateX(-50%);background:rgba(40,60,80,.92);color:#fff;
+    border-radius:999px;padding:10px 20px;font-size:14px;font-weight:700;z-index:99;opacity:0;transition:.3s;pointer-events:none;max-width:86%;text-align:center}
+  .toast.show{opacity:1}
+  .wxwarn{background:#fff3d6;color:#b07800;font-size:13px;font-weight:700;border-radius:14px;margin:8px 14px;padding:10px 14px;line-height:1.6}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="avatar" id="topAvatar">🧒</div>
+  <div class="hi">CKC<small id="todayLine">今天也要加油呀</small></div>
+  <div class="chips">
+    <div class="chip">⏱<span id="stMins">0</span>分</div>
+    <div class="chip">🔥<span id="stStreak">0</span>天</div>
+    <div class="chip">🍪<span id="stCookie">0</span></div>
+    <div class="chip">🪙<span id="stCoin">0</span>元</div>
+  </div>
+</div>
+
+<!-- ================= 地图 ================= -->
+<div id="tab-map">
+  <div class="card mapwrap">
+    <div class="hint">🗺️ 地图上有六座小岛，每座岛住着一只小宠物。灰色+锁的是还没解锁的——去打卡、读书，它们就会亮起来等你！点已解锁的岛，就能和小宠物玩。</div>
+    <svg class="mapsvg" id="mapSvg" viewBox="0 0 360 620"></svg>
+  </div>
+  <div class="card">
+    <h2>🗺️ 冒险进度</h2>
+    <div class="hint" id="mapHint"></div>
+  </div>
+</div>
+
+<!-- ================= 打卡 ================= -->
+<div id="tab-check" style="display:none">
+  <div class="card">
+    <h2>✏️ 今天的阅读打卡</h2>
+    <div class="hint">第一步：今天读了哪本呀？（读了书架以外的书就选“自由阅读”）</div>
+    <div class="optrow" id="bookChips"></div>
+    <div class="hint">第二步：读了多久？</div>
+    <div class="optrow" id="minChips"></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+      <span style="font-size:13px;color:#8a97a8">自己填：</span><input type="number" id="customMin" min="1" max="600" placeholder="分钟">
+      <span style="font-size:13px;color:#8a97a8">分钟</span>
+    </div>
+    <div class="hint">第三步：用一句话说说今天读到的最有趣的地方（可以不写）</div>
+    <input type="text" id="noteInput" maxlength="60" placeholder="例如：我没想到主角居然是……" style="margin-bottom:14px">
+    <button class="bigbtn" onclick="doCheckin()">打卡啦！🎉</button>
+</div>
+</div>
+
+<!-- ================= 小结 ================= -->
+<div id="tab-sum" style="display:none">
+  <div class="card">
+    <h2>✨ 今日小结<span class="cookiebadge">写完送阅读饼干🍪</span></h2>
+    <div class="hint">每天写一写，喂饱岛上的小伙伴～</div>
+    <div id="promptArea"></div>
+    <button class="bigbtn mintbtn" id="sumBtn" onclick="saveSummary()">保存今天的小结 🌟</button>
+  </div>
+</div>
+
+<!-- ================= 书架 ================= -->
+<div id="tab-shelf" style="display:none">
+  <div class="card">
+    <h2>📚 我的书架</h2>
+    <div class="hint">读完一本书 → 写一句话书评 → 得 1 元零花钱 🪙</div>
+    <input type="text" id="newBookTitle" maxlength="30" placeholder="新书的名字" style="margin-bottom:8px">
+    <select id="newBookCat" style="width:100%;border:2px solid #e3ecf3;border-radius:14px;padding:10px;font-size:14px;background:#fbfdff;margin-bottom:8px">
+      <option value="en">英语绘本</option>
+      <option value="cn">中文绘本</option>
+      <option value="math">数学计算</option>
+    </select>
+    <button class="sm" style="margin-bottom:6px" onclick="addBook()">＋ 把书放上书架</button>
+  </div>
+  <div class="card" id="shelfLists"></div>
+  <div style="text-align:center;margin:6px 0 16px">
+    <button class="sm gray" onclick="openDrawer()">🔐 爸爸妈妈的抽屉</button>
+  </div>
+</div>
+
+<!-- ================= 宠物面板 ================= -->
+<div class="mask" id="mask" onclick="closeSheet()"></div>
+<div class="sheet" id="sheet">
+  <div class="petname" id="petName"></div>
+  <div class="petrole" id="petRole"></div>
+  <div class="petbig" id="petEmoji" onclick="petTap()">🐹</div>
+  <div class="bubble" id="petBubble">点我一下试试 😉</div>
+  <div class="petrow">
+    <button class="pbtn feed" id="feedBtn" onclick="feedPet()">🍪 喂饼干（<span id="feedCount">0</span>）</button>
+    <button class="pbtn talk" onclick="petTalk(true)">💬 说句话</button>
+  </div>
+  <div style="text-align:center;margin-top:12px"><button class="sm gray" onclick="closeSheet()">收起</button></div>
+</div>
+
+<!-- ================= 夸夸卡弹层 ================= -->
+<div class="praise" id="praiseMask" onclick="closePraise()"></div>
+
+<!-- ================= 抽屉 ================= -->
+<div class="drawer" id="drawer">
+  <h2>🔐 爸爸妈妈的抽屉</h2>
+  <div class="hint">这里都是大人的操作，数据只存在这台手机里。</div>
+  <button class="sm gray" onclick="closeDrawer()">← 返回</button>
+
+  <div class="sec">
+    <h3>📮 塞一张夸夸卡</h3>
+    <div class="hint">写具体的事，他会记得更牢。卡片会出现在出发岛的信箱上。</div>
+    <textarea id="praiseInput" rows="3" maxlength="120" placeholder="例如：今天你自己安排了打卡，不用我叫，妈妈看到了。"></textarea>
+    <button class="sm" style="margin-top:8px" onclick="sendPraise()">塞进邮筒 📮</button>
+    <div id="cardCount" style="font-size:12px;color:#8a97a8;margin-top:6px"></div>
+  </div>
+
+  <div class="sec">
+    <h3>✨ 每日小结题目（DIY）</h3>
+    <div class="hint">孩子每天看到的题目，可以随意增删改。</div>
+    <div id="promptAdmin"></div>
+    <button class="sm gray" onclick="addPrompt()">＋ 加一题</button>
+  </div>
+
+  <div class="sec">
+    <h3>🪙 书币账本</h3>
+    <div id="ledgerBox" class="ledger"></div>
+  </div>
+
+  <div class="sec">
+    <h3>💾 数据备份</h3>
+    <div class="hint">换手机或怕丢数据时用：复制下面的文字保存好；恢复时粘回来自动加载。</div>
+    <textarea id="exportBox" rows="4" readonly></textarea>
+    <button class="sm gray" style="margin-top:6px" onclick="fillExport()">生成备份数据</button>
+    <textarea id="importBox" rows="3" placeholder="把备份文字粘到这里" style="margin-top:10px"></textarea>
+    <button class="sm" style="margin-top:6px" onclick="doImport()">恢复数据</button>
+    <button class="sm red" style="margin-top:14px" onclick="wipeAll(this)">清空全部数据</button>
+  </div>
+</div>
+
+<!-- ================= 彩带提示条 ================= -->
+<div class="toast" id="toastBox"></div>
+<div id="wxBanner"></div>
+
+<!-- ================= 底部导航 ================= -->
+<div class="nav">
+  <button id="nav-map" class="on" onclick="go('map')"><span class="ico">🗺️</span>地图</button>
+  <button id="nav-check" onclick="go('check')"><span class="ico">✏️</span>打卡</button>
+  <button id="nav-sum" onclick="go('sum')"><span class="ico">✨</span>小结</button>
+  <button id="nav-shelf" onclick="go('shelf')"><span class="ico">📚</span>书架</button>
+</div>
+
+<script>
+/* ===================== 数据 ===================== */
+var KEY='ckcReadMapV1';
+function todayStr(){var d=new Date();return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());}
+function pad2(n){n=String(n);return n.length<2?'0'+n:n;}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+var DEF_PROMPTS=[
+  {id:'p1',title:'🌈 今天感恩的三件事',ph:'天气、一顿饭、书里的一个笑点……写三件吧'},
+  {id:'p2',title:'🤝 今天帮助别人的一件事',ph:'帮了谁？做了什么？写一件就好'}
+];
+var SAMPLE_BOOKS=[
+  {id:'s1',title:'The Gruffalo（咕噜牛）',cat:'en',done:false,review:'',doneAt:''},
+  {id:'s2',title:'爷爷一定有办法',cat:'cn',done:false,review:'',doneAt:''},
+  {id:'s3',title:'口算天天练·六上',cat:'math',done:false,review:'',doneAt:''}
+];
+var S=null;
+function load(){
+  try{var raw=localStorage.getItem(KEY);
+    if(raw){S=JSON.parse(raw);}
+    else{S={books:JSON.parse(JSON.stringify(SAMPLE_BOOKS)),logs:[],notes:{},drafts:{},prompts:JSON.parse(JSON.stringify(DEF_PROMPTS)),coins:[],cards:[],cookies:3};}
+  }catch(e){S={books:[],logs:[],notes:{},drafts:{},prompts:JSON.parse(JSON.stringify(DEF_PROMPTS)),coins:[],cards:[],cookies:0};}
+  if(!S.drafts)S.drafts={};
+  if(location.search.indexOf('demo=1')>-1){S.demo=true;S.books=[{id:'d1',title:'The Gruffalo',cat:'en',done:true,review:'小老鼠用智慧骗过了大怪兽',doneAt:'2026-10-10'},{id:'d2',title:'爷爷一定有办法',cat:'cn',done:true,review:'爷爷把旧毯子变成了好多东西',doneAt:'2026-10-11'},{id:'d3',title:'夏洛的网',cat:'cn',done:false,review:'',doneAt:''},{id:'d4',title:'口算天天练·六上',cat:'math',done:false,review:'',doneAt:''}];S.logs=[{date:'2026-10-09',mins:25},{date:'2026-10-10',mins:30},{date:'2026-10-11',mins:20}];S.cookies=5;S.coins=[{date:'2026-10-10',title:'The Gruffalo',review:'小老鼠用智慧骗过了大怪兽',paid:false}];S.cards=[{id:uid(),date:'2026-10-10',text:'今天你自己安排了打卡，不用我叫，妈妈看到了，特别棒！',read:false}];}
+}
+function save(){if(S&&S.demo)return;try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function totalMins(){var t=0;for(var i=0;i<S.logs.length;i++)t+=S.logs[i].mins;return t;}
+function doneCount(){var n=0;for(var i=0;i<S.books.length;i++)if(S.books[i].done)n++;return n;}
+function streak(){
+  var set={};for(var i=0;i<S.logs.length;i++)set[S.logs[i].date]=1;
+  var n=0,d=new Date();
+  if(!set[todayStr()])d.setDate(d.getDate()-1);
+  while(set[d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())]){n++;d.setDate(d.getDate()-1);}
+  return n;
+}
+function unreadCards(){var n=0;for(var i=0;i<S.cards.length;i++)if(!S.cards[i].read)n++;return n;}
+
+/* ===================== 宠物 ===================== */
+var ISLANDS=[
+  {x:180,y:560,name:'出发岛 · CKC小屋',emoji:'🏠',need:null,needText:''},
+  {x:70, y:450,name:'绘本草原',emoji:'🐹',pet:'仓鼠',role:'吃货兼小财主',need:'mins60',needText:'累计打卡满 60 分钟',deco:'🌾',color:'#9fd98f'},
+  {x:290,y:350,name:'故事森林',emoji:'🐶',pet:'小狗',role:'热情夸夸员',need:'done2',needText:'读完 2 本书',deco:'🌲',color:'#7cc98a'},
+  {x:80, y:245,name:'数学矿山',emoji:'🐱',pet:'小猫',role:'傲娇小教授',need:'done4',needText:'读完 4 本书',deco:'⛏️',color:'#b9a7e0'},
+  {x:290,y:140,name:'星空海湾',emoji:'🦜',pet:'小鹦鹉',role:'全岛广播站',need:'done6',needText:'读完 6 本书',deco:'⭐',color:'#7db8e8'},
+  {x:150,y:40, name:'精灵秘境',emoji:'🧚',pet:'小精灵',role:'谜语小老头',need:'done10',needText:'读完 10 本书',deco:'🌙',color:'#f0a5c8'}
+];
+var LINES={
+  '仓鼠':['嘿嘿，我的腮帮子里还藏着三块饼干……才不给你吃呢！','听说你今天读书了？那我今晚能做个饼干的梦啦！','读书就像囤饼干——一页一页攒，才够过冬！','嘘，告诉你个秘密：书里最好吃的部分，都藏在下一章。','你读完那本书，我的小金库就能再进一块饼干咯！','别看个子小，我可是全岛最会理财的仓鼠！','今天读了多少分钟呀？读得多，我给你跳一支饼干舞！','我最喜欢下雨天，可以窝在洞里听你讲故事。','哎，你说，饼干和好书，到底哪个更香？','下次读书带上我吧，我坐你肩膀上，不重！'],
+  '小狗':['汪！你今天也太棒了吧！我尾巴都摇成螺旋桨啦！','哇！你又翻开一本书！全岛最帅的读者就是你！','汪汪！我闻到了！是好书的味道！','你写字的样子特别帅，比骨头还让我开心！','别灰心别灰心，汪！我第一次接飞盘也失败了十次呢！','今天也是爱你的一天，汪！','你读过的书我都替你记着呢——我可是最忠诚的记录员！','冒险地图上的星星，都会为你亮的！','累了就趴一会儿，我陪你。','快点读完下一本吧，我想给你立一个大大的功勋牌！'],
+  '小猫':['哼，又来了？……也不是说想你啊。','读书而已，有什么了不起……你昨天那本，借我看看呗。','本喵才不会夸人。不过……你今天还行吧。','你的读书笔记写得不赖。我说的是不赖，不是好，别多想。','喂我小鱼干可以，但要先读完半页书，本喵的规矩。','别摸我尾巴……唉，算了，就摸一下。','全岛就我藏书最多，你快追上我了，真是……让人不爽呢。','困了就睡，书又不会跑。……晚安。','今天的你，勉强算有点帅。','哼，加油……这句不许跟别人说是我说的。'],
+  '小鹦鹉':['哇你好棒！哇你好棒！（这句是我跟你学的呀）','我听到你写的话啦——“{note}”！说得真好，我替你到处广播！','阅读使人进步！阅读使人进步！（我刚学的名言）','“{note}”——这句我要背下来，讲给森林里一百只鸟听！','歪！今天也读书了吗？歪！','我会学三种声音：打嗝、呼噜，还有你翻书页的沙沙声！','你的笔记是我见过最好吃的……不对，最好听的！','读完那本书记得告诉我，我要放礼花！（用嘴巴放的）','嘎——不好意思串台了。汪！也不对。总之你好棒！','书是甜的，饼干是咸的，我是吵的。'],
+  '小精灵':['嘘——年轻人，答案不在岛上，在书页里。','我活了一千岁，读过的书比你走过的路还多……大概吧。','谜语时间：什么东西越读越厚？答对啦，是你自己。','今天的你比昨天多了一页书的智慧，我数过了。','地图尽头的宝藏？呵，宝藏就是读书的你呀。','别急着长大，先急着读书，顺序别搞反喽。','我打个盹的功夫你读了三页？后生可畏，后生可畏。','饼干我不吃，我吃故事。今天有新故事吗？','每一本书都是一扇门，你的钥匙已经攒了一串啦。','去吧去吧，第六座岛的老家伙等你很久了。']
+};
+var curIsle=0,curLine=-1;
+function isleUnlocked(i){if(i===0)return true;var n=ISLANDS[i].need;if(n==='mins60')return totalMins()>=60;if(n==='done2')return doneCount()>=2;if(n==='done4')return doneCount()>=4;if(n==='done6')return doneCount()>=6;if(n==='done10')return doneCount()>=10;return false;}
+function isSleepTime(){var h=new Date().getHours();return h>=21||h<7;}
+
+/* ===================== TTS ===================== */
+function speak(t){
+  try{if(!('speechSynthesis' in window))return;
+    var u=new SpeechSynthesisUtterance(t);u.lang='zh-CN';u.pitch=1.8;u.rate=0.95;u.volume=1;
+    speechSynthesis.cancel();speechSynthesis.speak(u);}catch(e){}
+}
+
+/* ===================== 地图渲染 ===================== */
+function drawMap(){
+  var svg=document.getElementById('mapSvg');
+  var tm=totalMins();
+  var path='M '+ISLANDS[0].x+' '+ISLANDS[0].y;
+  for(var i=1;i<ISLANDS.length;i++){var a=ISLANDS[i-1],b=ISLANDS[i];var mx=(a.x+b.x)/2;path+=' Q '+mx+' '+((a.y+b.y)/2+30)+' '+b.x+' '+b.y;}
+  var html='<path d="'+path+'" fill="none" stroke="#e8a94e" stroke-width="7" stroke-linecap="round" stroke-dasharray="1 15" opacity=".85"/>';
+  html+='<path d="'+path+'" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 22"/>';
+  var cur=0;for(var j=ISLANDS.length-1;j>=0;j--){if(isleUnlocked(j)){cur=j;break;}}
+  for(var k=0;k<ISLANDS.length;k++){
+    var it=ISLANDS[k],un=isleUnlocked(k);
+    html+='<g class="isle'+(un?'':' dim')+'" onclick="openIsle('+k+')">';
+    html+='<ellipse cx="'+it.x+'" cy="'+(it.y+16)+'" rx="52" ry="20" fill="'+(it.color||'#ffd9a8')+'" opacity=".9"/>';
+    if(it.deco)html+='<text x="'+(it.x-38)+'" y="'+(it.y+6)+'" font-size="17">'+it.deco+'</text>';
+    if(it.deco)html+='<text x="'+(it.x+28)+'" y="'+(it.y+10)+'" font-size="15">'+it.deco+'</text>';
+    var face=it.emoji;
+    html+='<text x="'+it.x+'" y="'+it.y+'" font-size="40" text-anchor="middle"'+(un?'':' opacity=".45"')+'>'+face+'</text>';
+    if(!un)html+='<text x="'+(it.x+26)+'" y="'+(it.y-24)+'" font-size="17">🔒</text>';
+    var label=(k===0)?'出发岛':it.name;
+    html+='<text x="'+it.x+'" y="'+(it.y+44)+'" font-size="12.5" font-weight="800" text-anchor="middle" fill="'+(un?'#4a5b6d':'#9aa9b8')+'">'+label+'</text>';
+    if(!un)html+='<text x="'+it.x+'" y="'+(it.y+60)+'" font-size="10.5" text-anchor="middle" fill="#b3bfc9">'+it.needText+'</text>';
+    if(k===0&&unreadCards()>0)html+='<text class="mailflag" x="'+(it.x+40)+'" y="'+(it.y-8)+'" font-size="22">📬</text><circle cx="'+(it.x+52)+'" cy="'+(it.y-24)+'" r="6" fill="#ff5252" stroke="#fff" stroke-width="2"/>';
+    html+='</g>';
+  }
+  var av=ISLANDS[cur];
+  html+='<text class="avatarM" x="'+(av.x-46)+'" y="'+(av.y-6)+'" font-size="30" text-anchor="middle">🧒</text>';
+  svg.innerHTML=html;
+  var nxt=null;for(var m=cur+1;m<ISLANDS.length;m++){if(!isleUnlocked(m)){nxt=ISLANDS[m];break;}}
+  var hint='';
+  if(!nxt){hint='🎉 全部小岛都点亮啦！你是传说级阅读冒险家！';}
+  else{hint='下一站：'+nxt.name+'，'+nxt.needText+'（现在：'+totalMins()+' 分钟 / '+doneCount()+' 本）';}
+  document.getElementById('mapHint').textContent=hint;
+}
+
+/* ===================== 岛屿/宠物交互 ===================== */
+function openIsle(i){
+  var it=ISLANDS[i];
+  if(!isleUnlocked(i)){speak('还差一点点，加油！');return;}
+  if(i===0){if(unreadCards()>0)showPraise();else{bubbleOnce('这是你的小屋，信箱上没有新信～');}return;}
+  curIsle=i;curLine=-1;
+  document.getElementById('petName').textContent=it.emoji+' '+it.pet;
+  document.getElementById('petRole').textContent='住着 '+it.name+' · '+it.role;
+  document.getElementById('petEmoji').textContent=it.emoji;
+  document.getElementById('feedCount').textContent=S.cookies;
+  document.getElementById('feedBtn').disabled=S.cookies<1;
+  document.getElementById('petBubble').textContent=isSleepTime()?'Zzz……（它睡得香香的）':'点我一下试试 😉';
+  document.getElementById('mask').classList.add('show');
+  document.getElementById('sheet').classList.add('show');
+}
+function closeSheet(){document.getElementById('mask').classList.remove('show');document.getElementById('sheet').classList.remove('show');drawMap();}
+function bubbleOnce(t){var b=document.getElementById('petBubble');b.textContent=t;}
+function petTalk(fromBtn){
+  if(isSleepTime()){bubbleOnce('Zzz……（它睡得香香的，明早再聊吧）');return;}
+  var pet=ISLANDS[curIsle].pet,lines=LINES[pet];
+  if(fromBtn||curLine<0){curLine=Math.floor(Math.random()*lines.length);}
+  else{curLine=(curLine+1)%lines.length;}
+  var t=lines[curLine].replace(/\{note\}/g,lastNote()||'今天也要加油');
+  bubbleOnce(t);speak(t);
+}
+function lastNote(){var n='';for(var i=0;i<S.logs.length;i++){if(S.logs[i].note&&S.logs[i].note.length>1)n=S.logs[i].note;}return n;}
+function feedPet(){
+  if(isSleepTime()){bubbleOnce('Zzz……（睡着了，叫不醒）');return;}
+  if(S.cookies<1){bubbleOnce('没有饼干啦！去打卡或写小结赚饼干吧 🍪');return;}
+  S.cookies--;save();
+  document.getElementById('feedCount').textContent=S.cookies;
+  document.getElementById('stCookie').textContent=S.cookies;
+  document.getElementById('feedBtn').disabled=S.cookies<1;
+  var pe=document.getElementById('petEmoji');pe.classList.remove('eat');void pe.offsetWidth;pe.classList.add('eat');
+  var t='嗝——！好饱呀，谢谢你！';bubbleOnce(t);speak('嗝！好饱呀，谢谢你！');
+  confetti(6);
+}
+function petTap(){petTalk(false);}
+
+/* ===================== 打卡 ===================== */
+var selBook='free',selMin=0;
+function renderBookChips(){
+  var box=document.getElementById('bookChips');var html='<div class="opt sel" onclick="pickBook(\'free\',this)">🕊️ 自由阅读</div>';
+  for(var i=0;i<S.books.length;i++){var b=S.books[i];html+='<div class="opt" onclick="pickBook(\''+b.id+'\',this)">'+(b.cat==='en'?'📗':b.cat==='cn'?'📖':'🧮')+' '+b.title+'</div>';}
+  box.innerHTML=html;
+}
+function pickBook(id,el){selBook=id;var ops=document.querySelectorAll('#bookChips .opt');for(var i=0;i<ops.length;i++)ops[i].classList.remove('sel');el.classList.add('sel');}
+function renderMinChips(){
+  var box=document.getElementById('minChips');var arr=[10,15,20,30,45,60];var html='';
+  for(var i=0;i<arr.length;i++){html+='<div class="opt" onclick="pickMin('+arr[i]+',this)">'+arr[i]+' 分钟</div>';}
+  box.innerHTML=html;
+}
+function pickMin(m,el){selMin=m;document.getElementById('customMin').value='';var ops=document.querySelectorAll('#minChips .opt');for(var i=0;i<ops.length;i++)ops[i].classList.remove('sel');el.classList.add('sel');}
+function doCheckin(){
+  var cm=parseInt(document.getElementById('customMin').value,10);
+  var mins=cm>0?cm:selMin;
+  if(!mins||mins<1){speak('先选一个阅读时长哦');return;}
+  var note=document.getElementById('noteInput').value.trim();
+  S.logs.push({date:todayStr(),mins:mins,bookId:selBook,note:note,ts:Date.now()});
+  S.cookies++;save();
+  document.getElementById('noteInput').value='';selMin=0;selBook='free';
+  renderBookChips();renderMinChips();refreshStats();drawMap();
+  confetti(16);
+  var msg=mins>=45?'超级阅读侠！':mins>=30?'太厉害了！':mins>=15?'好样的！':'开张啦！';
+  var line=msg+' 今天读了 '+mins+' 分钟，获得 1 块阅读饼干 🍪';
+  document.getElementById('todayLine').textContent=line;
+  toast(line);speak(line);
+}
+
+/* ===================== 今日小结 ===================== */
+function renderPrompts(){
+  var t=todayStr(),today=S.notes[t]||{},dr=S.drafts[t]||{};
+  var box=document.getElementById('promptArea');var html='';
+  for(var i=0;i<S.prompts.length;i++){var p=S.prompts[i];
+    var val=(dr[p.id]!==undefined&&dr[p.id]!==null)?String(dr[p.id]):(today[p.id]?String(today[p.id]):'');
+    html+='<div class="pitem"><label>'+p.title+'</label><textarea rows="3" maxlength="300" data-pid="'+p.id+'" placeholder="'+(p.ph||'')+'">'+val.replace(/</g,'&lt;')+'</textarea></div>';}
+  box.innerHTML=html;
+  var btn=document.getElementById('sumBtn');
+  var hasDraft=false;for(var dk in dr){if(dr[dk]&&dr[dk].length)hasDraft=true;}
+  btn.textContent=S.notes[t]?(hasDraft?'保存修改，再领新饼干 🌟':'今天的小结已保存 ✓（明天再来）'):'保存今天的小结 🌟';
+}
+function draftHook(){
+  document.getElementById('promptArea').addEventListener('input',function(e){
+    var pid=e.target.getAttribute('data-pid');if(!pid)return;
+    var t=todayStr();S.drafts[t]=S.drafts[t]||{};S.drafts[t][pid]=e.target.value;save();
+  });
+}
+function saveSummary(){
+  var areas=document.querySelectorAll('#promptArea textarea');
+  var ans={},any=false;
+  for(var i=0;i<areas.length;i++){var v=areas[i].value.trim();ans[areas[i].getAttribute('data-pid')]=v;if(v)any=true;}
+  if(!any){toast('随便写一点今天的开心嘛');return;}
+  var t=todayStr();var before=S.notes[t]||{};
+  var earned=0;for(var k in ans){if(ans[k]&&!(before[k]&&before[k].length))earned++;}
+  S.notes[t]=ans;if(S.drafts[t])delete S.drafts[t];
+  if(earned>0){S.cookies+=earned;confetti(10);}
+  save();refreshStats();toast('小结保存啦！获得 '+earned+' 块阅读饼干 🍪');
+  document.getElementById('sumBtn').textContent='今天的小结已保存 ✓（明天再来）';
+  var line='小结保存啦！获得 '+earned+' 块阅读饼干';
+  document.getElementById('todayLine').textContent=line;
+  speak(line);
+}
+
+/* ===================== 书架 ===================== */
+var CATS=[{k:'en',n:'英语绘本',ico:'📗'},{k:'cn',n:'中文绘本',ico:'📖'},{k:'math',n:'数学计算',ico:'🧮'}];
+function addBook(){
+  var t=document.getElementById('newBookTitle').value.trim();
+  if(!t){speak('先写上书的名字哦');return;}
+  var c=document.getElementById('newBookCat').value;
+  S.books.push({id:uid(),title:t,cat:c,done:false,review:'',doneAt:''});save();
+  document.getElementById('newBookTitle').value='';
+  renderShelf();speak('新书已上架！');
+}
+function renderShelf(){
+  var box=document.getElementById('shelfLists');var html='';
+  for(var c=0;c<CATS.length;c++){var cat=CATS[c];
+    html+='<div class="shelfhead">'+cat.ico+' '+cat.n+'</div>';
+    var any=false;
+    for(var i=0;i<S.books.length;i++){var b=S.books[i];if(b.cat!==cat.k)continue;any=true;
+      html+='<div class="book"><div class="bico">'+(b.done?'🏅':cat.ico)+'</div><div class="colL"><div class="btitle'+(b.done?' done':'')+'">'+b.title+'</div>'+(b.done?'<div class="brev">📝 '+b.review+'</div>':'')+'</div>';
+      if(!b.done)html+='<button class="mini gold" onclick="finishBook(\''+b.id+'\')">读完✓</button>';
+      html+='<button class="mini del" onclick="delBook(\''+b.id+'\')">删</button></div>';}
+    if(!any)html+='<div class="empty">这一格还空着，放本书上来吧</div>';
+  }
+  box.innerHTML=html;
+}
+function delBook(id){
+  if(!confirm('确定把这本书从书架拿走吗？'))return;
+  S.books=S.books.filter(function(b){return b.id!==id;});save();renderShelf();
+}
+function finishBook(id){
+  var b=null;for(var i=0;i<S.books.length;i++)if(S.books[i].id===id)b=S.books[i];
+  if(!b)return;
+  var r=prompt('📖 一句话书评：《'+b.title+'》讲了什么？\n（写好就能得 1 元零花钱 🪙）');
+  if(r===null)return;
+  r=r.trim();if(!r){alert('写一句书评才能领零花钱哦～');return;}
+  b.done=true;b.review=r;b.doneAt=todayStr();
+  S.coins.push({date:todayStr(),title:b.title,review:r,paid:false});
+  save();renderShelf();refreshStats();drawMap();confetti(20);
+  speak('读完一本！一块钱零花钱到账！');
+}
+
+/* ===================== 夸夸卡 ===================== */
+function showPraise(){
+  var unreads=S.cards.filter(function(c){return !c.read;});
+  if(unreads.length<1)return;
+  var c=unreads[unreads.length-1];c.read=true;save();
+  var box=document.getElementById('praiseMask');
+  box.innerHTML='<div class="praisecard" onclick="event.stopPropagation()"><div class="from">📮 妈妈的夸夸卡</div><div class="ptext">CKC：<br>'+String(c.text).replace(/</g,'&lt;')+'</div><div class="pdate">'+c.date+' · 已收藏在夸夸墙 🌟</div><button class="sm" style="margin-top:14px" onclick="closePraise()">收好啦！</button></div>';
+  box.classList.add('show');confetti(18);speak('CKC，妈妈说：'+c.text);
+}
+function closePraise(){document.getElementById('praiseMask').classList.remove('show');drawMap();}
+function sendPraise(){
+  var t=document.getElementById('praiseInput').value.trim();
+  if(!t){alert('写点什么再塞进邮筒吧');return;}
+  S.cards.push({id:uid(),date:todayStr(),text:t,read:false});save();
+  document.getElementById('praiseInput').value='';
+  renderCardCount();drawMap();alert('塞好啦！他打开地图就能看到红点亮起 📮');
+}
+function renderCardCount(){document.getElementById('cardCount').textContent='已塞 '+S.cards.length+' 张卡，'+unreadCards()+' 张未读。';}
+
+/* ===================== 抽屉 ===================== */
+function openDrawer(){
+  document.getElementById('drawer').classList.add('show');
+  renderCardCount();renderPromptAdmin();renderLedger();fillExport();
+}
+function closeDrawer(){document.getElementById('drawer').classList.remove('show');}
+function renderPromptAdmin(){
+  var box=document.getElementById('promptAdmin');var html='';
+  for(var i=0;i<S.prompts.length;i++){var p=S.prompts[i];
+    html+='<div class="row"><input type="text" value="'+String(p.title).replace(/"/g,'&quot;')+'" onchange="editPrompt(\''+p.id+'\',this.value)"><button class="mini del" onclick="delPrompt(\''+p.id+'\')">删</button></div>';
+    html+='<div class="hint" style="margin:-4px 0 8px 4px">提示语：'+(p.ph||'无')+'</div>';
+  }
+  box.innerHTML=html;
+}
+function editPrompt(id,v){for(var i=0;i<S.prompts.length;i++)if(S.prompts[i].id===id){S.prompts[i].title=v;}save();renderPrompts();}
+function delPrompt(id){if(!confirm('删除这道题？'))return;S.prompts=S.prompts.filter(function(p){return p.id!==id;});save();renderPromptAdmin();renderPrompts();}
+function addPrompt(){S.prompts.push({id:uid(),title:'🌟 新题目（点这里改名）',ph:'给孩子的提示语'});save();renderPromptAdmin();renderPrompts();}
+function renderLedger(){
+  var box=document.getElementById('ledgerBox');
+  if(S.coins.length===0){box.innerHTML='<div class="empty">还没有读完的书，账本空空的</div>';return;}
+  var unpaid=0,html='';
+  for(var i=S.coins.length-1;i>=0;i--){var c=S.coins[i];
+    if(!c.paid)unpaid++;
+    html+='<div>📅 '+c.date+' · '+c.title+'<br>📝 '+c.review+' <span class="'+(c.paid?'':'unpaid')+'">'+(c.paid?'✓ 已兑换':'待兑换 1 元')+'</span> <button class="mini '+(c.paid?'del':'gold')+'" onclick="togglePaid('+i+')">'+(c.paid?'取消':'付好啦')+'</button></div><hr style="border:none;border-top:1px dashed #e3e3e3;margin:6px 0">';
+  }
+  html='<div style="font-weight:800;margin-bottom:6px">未兑换合计：<span class="unpaid">'+unpaid+'</span> 元</div>'+html;
+  box.innerHTML=html;
+}
+function togglePaid(i){S.coins[i].paid=!S.coins[i].paid;save();renderLedger();}
+function fillExport(){document.getElementById('exportBox').value=JSON.stringify(S);}
+function doImport(){
+  var t=document.getElementById('importBox').value.trim();
+  if(!t){alert('先把备份文字粘进来');return;}
+  try{var o=JSON.parse(t);if(!o.books||!o.logs)throw 0;S=o;save();closeDrawer();renderAll();alert('恢复成功！');}
+  catch(e){alert('这段文字好像不对，检查一下再试');}
+}
+function wipeAll(btn){
+  if(btn.dataset.arm!=='1'){btn.dataset.arm='1';btn.textContent='再点一次，真的清空';setTimeout(function(){btn.dataset.arm='';btn.textContent='清空全部数据';},3000);return;}
+  localStorage.removeItem(KEY);load();closeDrawer();renderAll();alert('已清空，从头开始！');
+}
+
+/* ===================== 彩带/提示/统计/导航 ===================== */
+var toastTimer=null;
+function toast(msg){var el=document.getElementById('toastBox');el.textContent=msg;el.classList.add('show');
+  clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.classList.remove('show');},2600);}
+window.onerror=function(m){try{toast('⚠️ 出了点小状况：'+m);}catch(e){}return false;}
+function confetti(n){
+  var em=['🎉','⭐','✨','🍪','🌈','💛'];
+  for(var i=0;i<n;i++){var s=document.createElement('span');s.className='confetti';
+    s.textContent=em[Math.floor(Math.random()*em.length)];
+    s.style.left=Math.random()*100+'vw';
+    s.style.animationDuration=(1.2+Math.random()*1.2)+'s';
+    s.style.animationDelay=(Math.random()*.4)+'s';
+    document.body.appendChild(s);
+    setTimeout(function(sp){return function(){sp.remove();};}(s),2800);}
+}
+function refreshStats(){
+  document.getElementById('stMins').textContent=totalMins();
+  document.getElementById('stStreak').textContent=streak();
+  document.getElementById('stCookie').textContent=S.cookies;
+  var un=0;for(var i=0;i<S.coins.length;i++)if(!S.coins[i].paid)un++;
+  document.getElementById('stCoin').textContent=un;
+}
+function go(t){
+  var tabs=['map','check','sum','shelf'];
+  for(var i=0;i<tabs.length;i++){
+    document.getElementById('tab-'+tabs[i]).style.display=(tabs[i]===t)?'':'none';
+    document.getElementById('nav-'+tabs[i]).className=(tabs[i]===t)?'on':'';
+  }
+  if(t==='map')drawMap();
+  if(t==='check'){renderBookChips();renderMinChips();}
+  if(t==='sum')renderPrompts();
+  if(t==='shelf')renderShelf();
+  window.scrollTo(0,0);
+}
+function renderAll(){refreshStats();renderBookChips();renderMinChips();renderPrompts();renderShelf();drawMap();}
+
+/* ===================== 启动 ===================== */
+load();
+var d=new Date();var wk=['周日','周一','周二','周三','周四','周五','周六'][d.getDay()];
+document.getElementById('todayLine').textContent='今天'+wk+'，也要读一点哦';
+try{refreshStats();}catch(e){}
+try{renderBookChips();}catch(e){}
+try{renderMinChips();}catch(e){}
+try{renderPrompts();}catch(e){}
+try{renderShelf();}catch(e){}
+try{drawMap();}catch(e){}
+try{draftHook();}catch(e){}
+if(typeof localStorage==='undefined'||/MicroMessenger/i.test(navigator.userAgent)){
+  var wb=document.getElementById('wxBanner');
+  wb.innerHTML='<div class="wxwarn">⚠️ 微信里打开看不到小宠物哦。请点右上角“…”→“在浏览器打开”，就能看到完整地图啦！</div>';
+}
+var h=(location.hash||'#map').replace('#','');
+go(['map','check','sum','shelf'].indexOf(h)>-1?h:'map');
+</script>
+</body>
+</html>
