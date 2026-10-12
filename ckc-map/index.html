@@ -195,6 +195,14 @@
 <!-- ================= 书架 ================= -->
 <div id="tab-shelf" style="display:none">
   <div class="card">
+    <h2>🎓 我的阅读报告</h2>
+    <div class="hint">生成一张属于你的阅读卡片，截图保存，发给老师或爸妈吧！</div>
+    <div style="display:flex;gap:8px">
+      <button class="bigbtn" style="flex:1;margin-top:4px" onclick="showReport('game')">宫殿成就卡 🏰</button>
+      <button class="bigbtn mintbtn" style="flex:1;margin-top:4px" onclick="showReport('school')">阅读成绩单 📜</button>
+    </div>
+  </div>
+  <div class="card">
     <h2>📚 我的书架</h2>
     <div class="hint">读完一本书 → 写一句话书评 → 得 1 元零花钱 🪙</div>
     <input type="text" id="newBookTitle" maxlength="30" placeholder="新书的名字" style="margin-bottom:8px">
@@ -229,6 +237,8 @@
 <div class="praise" id="praiseMask" onclick="closePraise()"></div>
 <!-- ================= 旧地记录弹层 ================= -->
 <div class="praise" id="recMask" onclick="closeRec()"></div>
+<!-- ================= 阅读报告卡弹层 ================= -->
+<div class="praise" id="repMask" onclick="closeReport()"></div>
 
 <!-- ================= 抽屉 ================= -->
 <div class="drawer" id="drawer">
@@ -282,6 +292,7 @@
 <script>
 /* ===================== 数据 ===================== */
 var KEY='ckcReadMapV2';var KEYOLD='ckcReadMapV1';
+var ISSTU=/[?&]s=/.test(location.search);
 function migrateV1(){
   if(typeof S.land!=='number')S.land=0;
   if(!S.house||S.house.length!==6)S.house=[0,0,0,0,0,0];
@@ -342,9 +353,24 @@ var DRESS=[null,'🧢','🧣','👕','👟','👑'];
 var DRESSNAME=[null,'小帽子','小围巾','新衣服','小鞋子','盛装'];
 function landMins(i){var t=0;for(var j=0;j<S.logs.length;j++){if((S.logs[j].land||0)===i)t+=S.logs[j].mins;}return t;}
 function landBooks(i){var n=0;for(var j=0;j<S.books.length;j++){var b=S.books[j];if(b.done&&(b.land||0)===i)n++;}return n;}
-function condLevel(i){var lv=0;if(landMins(i)>=60)lv=1;var bk=landBooks(i);if(bk>=2)lv=Math.max(lv,2);if(bk>=4)lv=Math.max(lv,3);if(bk>=6)lv=Math.max(lv,4);if(bk>=10)lv=Math.max(lv,5);return lv;}
+function condLevel(i){
+  if(ISSTU){
+    var t=landMins(i)+landBooks(i)*30;
+    var lv=0;if(t>=180)lv=1;if(t>=420)lv=2;if(t>=720)lv=3;if(t>=1080)lv=4;if(t>=1500)lv=Math.max(lv,5);return lv;
+  }
+  var lv=0;if(landMins(i)>=60)lv=1;var bk=landBooks(i);if(bk>=2)lv=Math.max(lv,2);if(bk>=4)lv=Math.max(lv,3);if(bk>=6)lv=Math.max(lv,4);if(bk>=10)lv=Math.max(lv,5);return lv;
+}
 function nextGoal(i){
   var h=S.house[i],bk=landBooks(i),mn=landMins(i);
+  if(ISSTU){
+    var t=mn+bk*30;
+    if(h<1)return '工期满 3 小时（已 '+fmtHrs(t)+'）';
+    if(h<2)return '工期满 7 小时（已 '+fmtHrs(t)+'）';
+    if(h<3)return '工期满 12 小时（已 '+fmtHrs(t)+'）';
+    if(h<4)return '工期满 18 小时（已 '+fmtHrs(t)+'）';
+    if(h<5)return '工期满 25 小时，宫殿落成（已 '+fmtHrs(t)+'）';
+    return null;
+  }
   if(h<1)return '打卡满 60 分钟（这片地已 '+mn+' 分钟）';
   if(h<2)return '读完 2 本（已 '+bk+' 本）';
   if(h<3)return '读完 4 本（已 '+bk+' 本）';
@@ -655,6 +681,62 @@ function wipeAll(btn){
   try{localStorage.removeItem(KEY);}catch(e){}try{localStorage.removeItem(KEYOLD);}catch(e){}load();closeDrawer();renderAll();alert('已清空，从头开始！');
 }
 
+/* ===================== 阅读报告卡 ===================== */
+var STU='CKC';(function(){var m=location.search.match(/[?&]s=([^&]+)/);if(m)STU=decodeURIComponent(m[1]);})();
+function fmtHrs(m){var h=Math.floor(m/60),r=m%60;if(h<=0)return r+' 分钟';return r?(h+' 小时 '+r+' 分钟'):(h+' 小时');}
+function showReport(style){
+  var d=new Date();var date=d.getFullYear()+'.'+pad2(d.getMonth()+1)+'.'+pad2(d.getDate());
+  var tm=totalMins(),bk=doneCount(),st=streak();
+  var land=LANDS[S.land],h=S.house[S.land];
+  var card='';
+  if(style==='game'){
+    var petsRow='';
+    for(var i=1;i<LANDS.length;i++){var p=LANDS[i];petsRow+='<span style="font-size:22px;margin:0 3px">'+p.pe+'</span>';
+      if(S.house[i]>=1)petsRow+='<span style="font-size:13px;margin-right:6px">'+accStr(i)+'</span>';}
+    card+='<div style="width:330px;max-width:86vw;border-radius:22px;overflow:hidden;box-shadow:0 20px 60px rgba(20,40,80,.35)">';
+    card+='<div style="background:linear-gradient(160deg,#2c3e6b,#5b4a8a 55%,#8a5aa0);padding:20px 16px 16px;color:#fff;text-align:center">';
+    card+='<div style="font-size:12px;letter-spacing:4px;opacity:.75">✦ READING PALACE ✦</div>';
+    card+='<div style="font-size:48px;margin:6px 0 2px">🏰</div>';
+    card+='<div style="font-size:19px;font-weight:900">'+STU+' 的宫殿成就卡</div>';
+    card+='<div style="font-size:11px;opacity:.85;margin-top:3px">'+date+' · 现居 '+land.name+' · '+HOUSE[h].n+'</div>';
+    card+='</div>';
+    card+='<div style="background:linear-gradient(180deg,#fdf6e8,#fff3d6);padding:14px 18px 12px">';
+    card+='<div style="display:flex;justify-content:space-between;font-size:12.5px;margin:5px 0;color:#4a4a5a"><span>⏱ 工期累计</span><b>'+fmtHrs(tm)+'</b></div>';
+    card+='<div style="display:flex;justify-content:space-between;font-size:12.5px;margin:5px 0;color:#4a4a5a"><span>📚 读完</span><b>'+bk+' 本</b></div>';
+    card+='<div style="display:flex;justify-content:space-between;font-size:12.5px;margin:5px 0;color:#4a4a5a"><span>🔥 连续打卡</span><b>'+st+' 天</b></div>';
+    card+='<div style="display:flex;justify-content:space-between;font-size:12.5px;margin:5px 0;color:#4a4a5a"><span>🏠 房子等级</span><b>'+HOUSE[h].n+'</b></div>';
+    card+='<div style="border-top:1px dashed #e0cfa0;margin-top:8px;padding-top:8px;text-align:center">';
+    card+='<div style="font-size:10.5px;color:#9a8a6a;margin-bottom:4px">住在各片地的小伙伴们</div><div>'+petsRow+'</div>';
+    card+='</div>';
+    card+='<div style="text-align:center;font-size:9.5px;color:#b0a482;margin-top:8px;letter-spacing:1px">EMMA 阅读馆 · One story, soothe hearts and connect families.</div>';
+    card+='</div></div>';
+  }else{
+    var rows='';var shown=0;
+    for(var j=S.books.length-1;j>=0&&shown<5;j--){var b=S.books[j];if(!b.done)continue;shown++;
+      rows+='<div style="display:flex;gap:6px;margin:5px 0;align-items:baseline"><span style="flex:1"><b>'+b.title+'</b><br><span style="color:#8a7a5a;font-size:11px">📝 '+b.review+'</span></span><span style="color:#9aa9b8;font-size:10.5px;white-space:nowrap">'+b.doneAt+'</span></div>';}
+    if(!shown)rows='<div style="color:#9aa9b8;padding:8px 0">还没有读完的书，加油！</div>';
+    else if(bk>shown)rows+='<div style="color:#9aa9b8;font-size:11px;margin-top:4px">……还有 '+(bk-shown)+' 本，详见阅读地图</div>';
+    card+='<div style="width:330px;max-width:86vw;background:#fffdf6;border-radius:14px;border:2px solid #e8dcc0;padding:16px;box-shadow:0 20px 60px rgba(80,60,20,.25)">';
+    card+='<div style="text-align:center;border-bottom:2px solid #d9c89a;padding-bottom:8px">';
+    card+='<div style="font-size:18px;font-weight:900;letter-spacing:6px;color:#4a4030">阅 读 成 绩 单</div>';
+    card+='<div style="font-size:10.5px;color:#8a7a5a;margin-top:3px">'+STU+' · '+date+' · EMMA 阅读馆</div></div>';
+    card+='<div style="display:flex;justify-content:space-around;margin:10px 0;text-align:center">';
+    card+='<div><div style="font-size:17px;font-weight:900;color:#5b4a8a">'+fmtHrs(tm)+'</div><div style="font-size:10px;color:#8a7a5a">累计打卡</div></div>';
+    card+='<div><div style="font-size:17px;font-weight:900;color:#5b4a8a">'+bk+' 本</div><div style="font-size:10px;color:#8a7a5a">读完</div></div>';
+    card+='<div><div style="font-size:17px;font-weight:900;color:#5b4a8a">'+st+' 天</div><div style="font-size:10px;color:#8a7a5a">连续打卡</div></div>';
+    card+='</div>';
+    card+='<div style="border-top:1px dashed #d9c89a;padding-top:6px">'+rows+'</div>';
+    card+='<div style="text-align:center;font-size:9.5px;color:#b0a482;margin-top:8px">One story, soothe hearts and connect families.</div>';
+    card+='</div>';
+  }
+  var box=document.getElementById('repMask');
+  box.innerHTML='<div onclick="event.stopPropagation()" style="display:flex;flex-direction:column;align-items:center">'
+    +'<div style="font-size:12px;color:#fff;background:rgba(0,0,0,.45);padding:6px 14px;border-radius:14px;margin-bottom:10px">📱 截图保存这张卡片，发给老师吧！</div>'
+    +card+'<button class="sm gray" style="margin-top:12px" onclick="closeReport()">收好啦！</button></div>';
+  box.classList.add('show');confetti(14);
+}
+function closeReport(){document.getElementById('repMask').classList.remove('show');}
+
 /* ===================== 彩带/提示/统计/导航 ===================== */
 var toastTimer=null;
 function toast(msg){var el=document.getElementById('toastBox');el.textContent=msg;el.classList.add('show');
@@ -703,6 +785,7 @@ try{renderPrompts();}catch(e){}
 try{renderShelf();}catch(e){}
 try{drawMap();}catch(e){}
 try{draftHook();}catch(e){}
+try{if(ISSTU){var hh=document.querySelector('#tab-map .hint');if(hh)hh.textContent+=' 读完一本书＝30分钟工期哦！';}}catch(e){}
 if(typeof localStorage==='undefined'||/MicroMessenger/i.test(navigator.userAgent)){
   var wb=document.getElementById('wxBanner');
   wb.innerHTML='<div class="wxwarn">⚠️ 微信里打开看不到小宠物哦。请点右上角“…”→“在浏览器打开”，就能看到完整地图啦！</div>';
