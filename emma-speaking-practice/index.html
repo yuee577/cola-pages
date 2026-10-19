@@ -76,6 +76,14 @@
     .footnote { margin: 15px 2px 0; color: #75817b; font-size: 12px; line-height: 1.6; text-align: center; }
     .toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom)); transform: translate(-50%, 12px); max-width: calc(100% - 28px); padding: 11px 15px; border-radius: 12px; background: #253832; color: #fff; font-size: 13px; opacity: 0; pointer-events: none; transition: opacity .18s, transform .18s; text-align: center; }
     .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .lesson-tabs { display: flex; gap: 9px; margin: 0 0 16px; }
+    .lesson-tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 10px 8px; border: 1.5px solid var(--line); border-radius: 15px; background: rgba(255,254,250,.78); color: var(--muted); cursor: pointer; }
+    .lesson-tab b { color: var(--ink); font-size: 14px; font-weight: 850; }
+    .lesson-tab span { font-size: 11px; }
+    .lesson-tab.active { border-color: var(--green); background: var(--mint); }
+    .lesson-tab.active b { color: var(--green-dark); }
+    .lesson-note { margin: 0 0 16px; padding: 10px 13px; border: 1px solid #efdfc4; border-radius: 13px; background: #fdf7ec; color: #8a6a45; font-size: 12px; line-height: 1.5; }
+    .lesson-note[hidden] { display: none; }
     @media (max-width: 430px) {
       .page { width: min(100% - 22px, 760px); padding-top: 17px; }
       .topline { margin-bottom: 23px; }
@@ -103,6 +111,9 @@
         <span class="step"><b>3</b> 看答案</span>
       </div>
     </section>
+
+    <nav class="lesson-tabs" id="lessonTabs" aria-label="选择课文"></nav>
+    <p class="lesson-note" id="lessonNote" hidden></p>
 
     <section class="practice" aria-label="口语练习卡片">
       <div class="practice-head">
@@ -138,13 +149,14 @@
       </div>
     </section>
 
-    <p class="footnote">这个网页播放的是 EMMA 老师的原声录音，每次打开题目顺序都会打乱。它不会录下或上传孩子的声音，也不会自动评分。口头回答后，再用参考答案自查。</p>
+    <p class="footnote">这个网页播放的是 EMMA 老师的原声录音，每一课的题目顺序每次打开都会打乱。它不会录下或上传孩子的声音，也不会自动评分。口头回答后，再用参考答案自查。</p>
   </main>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script>
     const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const questions = [
+    // ── 第 1 课：16 题（原声 q01–q16）────────────
+    const questions1 = [
       { q: 'How are you?', category: '日常问答', answers: ["I'm fine, thank you.", "I'm good.", "I'm great.", "I'm okay."], note: '选一句符合自己感受的回答就可以。' },
       { q: "What's your name?", category: '个人信息', answers: ['My name is ___.', "I'm ___."], note: '把空格换成自己的名字。' },
       { q: "How's the weather?", category: '天气', context: '想一想今天的天气，再用英语回答。', answers: ["It's sunny.", "It's cloudy.", "It's rainy.", "It's windy."], note: '根据今天实际的天气选一句。' },
@@ -163,16 +175,56 @@
       { q: 'Is your mom at home?', category: 'Is your mom 问答', answers: ['Yes, she is.', "No, she isn't."], note: '回答时用 she。' }
     ];
 
-    // 教师原声：q01–q16 对应上面 16 题（按清单顺序）
-    questions.forEach((item, i) => {
-      item.audio = `audio/q${String(i + 1).padStart(2, '0')}.mp3`;
+    // ── 第 2 课：13 题（原声 q17–q29，录好后上传）────────────
+    const questions2 = [
+      { q: 'What are you doing?', category: '现在进行时', answers: ["I'm reading a book.", "I'm doing my homework.", "I'm watching TV.", "I'm playing football."], note: '回答用 I’m + 动词ing，说你现在正在做的事。' },
+      { q: 'What is your mother doing?', category: '现在进行时（他/她）', answers: ["She's cooking.", "She's reading.", "She's working.", "She's sleeping."], note: '问妈妈，回答要用 she，动词也要加 ing。' },
+      { q: 'Is your father singing a song?', category: 'Is he 问答', answers: ['Yes, he is.', "No, he isn't."], note: '用 he 回答，后面不用再重复 singing a song。' },
+      { q: 'What time is it?', category: '时间问答', answers: ["It's seven o'clock.", "It's nine thirty.", "It's half past six."], note: '回答时间用 It’s …；整点加 o’clock，半点可以说 nine thirty。' },
+      { q: 'What time do you get up?', category: '日常作息', answers: ['I get up at six thirty.', "I get up at seven o'clock."], note: '回答几点用 at：I get up at + 时间。' },
+      { q: 'Do you get up at six o’clock?', category: 'Do you 问答', answers: ['Yes, I do.', "No, I don't."], note: '回答只说 Yes, I do. / No, I don’t.，不用再重复时间。' },
+      { q: 'What time does your father get up?', category: '第三人称单数', answers: ['He gets up at six thirty.', 'He gets up at seven o’clock.'], note: '问爸爸用 does，回答用 he gets up——get 要加 s。' },
+      { q: "What's your favorite sport?", category: '喜好问答', answers: ['My favorite sport is football.', "It's basketball.", 'I like swimming best.'], note: 'favorite 前面用 my / your；问运动就回答运动名称。' },
+      { q: 'What do you like to do?', category: '喜好活动', answers: ['I like to read books.', 'I like to play football.', 'I like to draw pictures.'], note: 'I like to + 动词原形。（这题和第 1 课第 13 题一样，正好练熟它。）' },
+      { q: 'Is it always so hot?', category: '天气问句', answers: ['Yes, it is.', "No, it isn't.", "I'm afraid so."], note: '这句来自课本里的泳池对话；I’m afraid so. = 恐怕是的。' },
+      { q: "What's for breakfast?", category: '三餐问答', answers: ['I have bread and milk.', 'Eggs and milk.', 'I have noodles.'], note: 'What’s for breakfast? = 早餐吃什么？回答直接说食物就可以。' },
+      { q: 'Where are they?', category: 'Where 问答（复数）', answers: ["They're in the park.", "They're at school.", "They're in the classroom."], note: 'they 是复数，回答用 They’re + 地点。' },
+      { q: 'Where are you?', category: 'Where 问答', answers: ["I'm at home.", "I'm in the classroom.", "I'm at school."], note: '回答用 I’m + 地点；at home 前面不加 the。' }
+    ];
+
+    const lessons = [
+      { id: 1, label: '第 1 课', questions: questions1 },
+      { id: 2, label: '第 2 课', questions: questions2 }
+    ];
+
+    // 音频按全局顺序编号：第 1 课 q01–q16，第 2 课 q17–q29。
+    // 还没录到的编号写在这里（会先用手机自带的英文朗读顶上）；29 段均已到位。
+    const AUDIO_PENDING = [];
+
+    let audioSeq = 0;
+    lessons.forEach(lesson => {
+      lesson.questions.forEach(item => {
+        audioSeq += 1;
+        item.audio = AUDIO_PENDING.indexOf(audioSeq) >= 0 ? null : `audio/q${String(audioSeq).padStart(2, '0')}.mp3`;
+      });
     });
 
-    // 每次打开网页，题目顺序随机打乱
-    for (let i = questions.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [questions[i], questions[j]] = [questions[j], questions[i]];
-    }
+    // 每次打开网页，每一课的题目顺序各自随机打乱
+    lessons.forEach(lesson => {
+      const list = lesson.questions;
+      for (let i = list.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [list[i], list[j]] = [list[j], list[i]];
+      }
+    });
+
+    // 打开哪一课：网址带 ?lesson=2 就直接进第 2 课，不带就是第 1 课
+    let lessonIndex = 0;
+    const wantedLesson = parseInt(new URLSearchParams(location.search).get('lesson'), 10);
+    const foundLesson = lessons.findIndex(lesson => lesson.id === wantedLesson);
+    if (foundLesson >= 0) lessonIndex = foundLesson;
+
+    function currentList() { return lessons[lessonIndex].questions; }
 
     let current = 0;
     let slow = true;
@@ -180,6 +232,8 @@
     const questionAudio = new Audio();
     questionAudio.preload = 'auto';
     const counter = document.getElementById('counter');
+    const lessonTabs = document.getElementById('lessonTabs');
+    const lessonNote = document.getElementById('lessonNote');
     const category = document.getElementById('category');
     const progress = document.querySelector('.progress');
     const progressFill = document.getElementById('progressFill');
@@ -195,12 +249,52 @@
     const nextButton = document.getElementById('nextButton');
     const toast = document.getElementById('toast');
 
+    function renderTabs() {
+      lessonTabs.innerHTML = '';
+      lessons.forEach((lesson, i) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'lesson-tab' + (i === lessonIndex ? ' active' : '');
+        btn.setAttribute('aria-pressed', String(i === lessonIndex));
+        const name = document.createElement('b');
+        name.textContent = lesson.label;
+        const count = document.createElement('span');
+        count.textContent = `${lesson.questions.length} 题`;
+        btn.appendChild(name);
+        btn.appendChild(count);
+        btn.addEventListener('click', () => {
+          if (i === lessonIndex) return;
+          lessonIndex = i;
+          current = 0;
+          renderTabs();
+          renderLessonNote();
+          renderQuestion();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        lessonTabs.appendChild(btn);
+      });
+    }
+
+    function renderLessonNote() {
+      const lesson = lessons[lessonIndex];
+      const missing = lesson.questions.filter(item => !item.audio).length;
+      if (missing === 0) {
+        lessonNote.hidden = true;
+        lessonNote.textContent = '';
+        return;
+      }
+      lessonNote.hidden = false;
+      lessonNote.textContent = `${lesson.label}还有 ${missing} 题的老师原声在补录，这几题先用手机自带的英文朗读练；原声上传后，点“听问题”就是老师的声音了。`;
+    }
+
     function renderQuestion() {
-      const item = questions[current];
-      counter.textContent = `第 ${current + 1} 题 / ${questions.length}`;
+      const list = currentList();
+      const item = list[current];
+      counter.textContent = `第 ${current + 1} 题 / ${list.length}`;
       category.textContent = item.category;
-      progressFill.style.width = `${((current + 1) / questions.length) * 100}%`;
+      progressFill.style.width = `${((current + 1) / list.length) * 100}%`;
       progress.setAttribute('aria-valuenow', String(current + 1));
+      progress.setAttribute('aria-valuemax', String(list.length));
       questionText.textContent = item.q;
       questionText.hidden = true;
       textButton.textContent = '看英文问句';
@@ -230,7 +324,7 @@
       answerNote.textContent = item.note || '';
       prevButton.disabled = current === 0;
       prevButton.style.opacity = current === 0 ? '.48' : '1';
-      nextButton.textContent = current === questions.length - 1 ? '再练一遍 ↺' : '下一题 →';
+      nextButton.textContent = current === list.length - 1 ? '再练一遍 ↺' : '下一题 →';
       questionAudio.pause();
       if (window.speechSynthesis) window.speechSynthesis.cancel();
     }
@@ -266,7 +360,7 @@
     }
 
     document.getElementById('playButton').addEventListener('click', () => {
-      const item = questions[current];
+      const item = currentList()[current];
       if (item.audio) {
         questionAudio.pause();
         if (!questionAudio.src || questionAudio.src.lastIndexOf(item.audio) !== questionAudio.src.length - item.audio.length) {
@@ -306,10 +400,12 @@
       if (current > 0) { current--; renderQuestion(); }
     });
     nextButton.addEventListener('click', () => {
-      current = current === questions.length - 1 ? 0 : current + 1;
+      current = current === currentList().length - 1 ? 0 : current + 1;
       renderQuestion();
     });
 
+    renderTabs();
+    renderLessonNote();
     renderQuestion();
   </script>
 </body>
