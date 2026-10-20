@@ -327,6 +327,7 @@
       nextButton.textContent = current === list.length - 1 ? '再练一遍 ↺' : '下一题 →';
       questionAudio.pause();
       if (window.speechSynthesis) window.speechSynthesis.cancel();
+      prefetchAudio(list[(current + 1) % list.length].audio);
     }
 
     function showToast(message) {
@@ -337,6 +338,7 @@
     }
 
     function speakWithTTS(text) {
+      questionAudio.pause();
       if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
         questionText.hidden = false;
         textButton.textContent = '隐藏英文问句';
@@ -359,16 +361,38 @@
       window.speechSynthesis.speak(utterance);
     }
 
+    function stopPlayback() {
+      questionAudio.pause();
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    }
+
+    // 预取下一题的音频，避免手机上网络慢时先响出机器人声音
+    const audioCache = new Map();
+    function prefetchAudio(url) {
+      if (!url || audioCache.has(url)) return;
+      const a = new Audio();
+      a.preload = 'auto';
+      a.src = url;
+      audioCache.set(url, a);
+    }
+
     document.getElementById('playButton').addEventListener('click', () => {
       const item = currentList()[current];
+      stopPlayback();
       if (item.audio) {
-        questionAudio.pause();
         if (!questionAudio.src || questionAudio.src.lastIndexOf(item.audio) !== questionAudio.src.length - item.audio.length) {
           questionAudio.src = item.audio;
         }
         questionAudio.playbackRate = slow ? 0.78 : 1;
-        questionAudio.currentTime = 0;
-        questionAudio.play().catch(() => speakWithTTS(item.q));
+        try { questionAudio.currentTime = 0; } catch (e) { }
+        const playing = questionAudio.play();
+        if (playing && playing.catch) {
+          playing.catch(error => {
+            if (error && error.name === 'AbortError') return;
+            showToast('老师原声没加载出来，先用手机朗读代替。');
+            speakWithTTS(item.q);
+          });
+        }
       } else {
         speakWithTTS(item.q);
       }
